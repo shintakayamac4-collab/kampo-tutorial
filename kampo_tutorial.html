@@ -1,0 +1,3288 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>漢方診療チュートリアル ― 医療面接から方剤選択まで</title>
+<style>
+  :root{
+    --bg:#f4f1ea; --panel:#fffdf8; --ink:#252119; --sub:#544c3d;
+    --line:#ded6c4; --accent:#6e4e2e; --accent2:#8a5722;
+    --good:#3f7d52; --good-bg:#e8f3ea; --bad:#b1492f; --bad-bg:#f7e9e4;
+    --warn:#9a7a1e; --warn-bg:#f6efd9; --chip:#efe9db; --shadow:0 2px 14px rgba(60,45,25,.10);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,system-ui,sans-serif;
+    line-height:1.75;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px;margin:0 auto;padding:24px 18px 80px}
+  header.top{text-align:center;padding:22px 0 8px}
+  header.top h1{font-size:1.5rem;margin:0 0 6px;letter-spacing:.02em;color:var(--accent)}
+  header.top p{margin:0;color:var(--sub);font-size:.92rem}
+  .progress{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:18px 0 10px}
+  .progress .seg{font-size:.74rem;padding:4px 10px;border-radius:20px;background:var(--chip);
+    color:var(--sub);border:1px solid transparent;white-space:nowrap}
+  .progress .seg.active{background:var(--accent);color:#fff}
+  .progress .seg.done{background:#dfe9df;color:var(--good);border-color:#cfe0cf}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:24px;box-shadow:var(--shadow);margin-top:14px}
+  .step-tag{display:inline-block;font-size:.72rem;letter-spacing:.12em;color:var(--accent2);
+    font-weight:700;margin-bottom:6px}
+  h2.section{font-size:1.22rem;margin:.1em 0 .5em;color:var(--ink)}
+  .lead{color:var(--sub);font-size:.95rem;margin:.2em 0 1em}
+  .vignette{background:#fbf6ec;border-left:4px solid var(--accent2);border-radius:8px;
+    padding:14px 16px;margin:12px 0;font-size:.96rem}
+  .vignette .who{font-weight:700;color:var(--accent)}
+  .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+  @media(max-width:560px){.qgrid{grid-template-columns:1fr}}
+  button.opt,button.qbtn{font:inherit;text-align:left;cursor:pointer;border:1px solid var(--line);
+    background:#fff;border-radius:10px;padding:12px 14px;transition:.15s;color:var(--ink)}
+  button.opt:hover,button.qbtn:hover{border-color:var(--accent2);background:#fbf4ea}
+  button.qbtn.asked{background:#eef3ee;border-color:#cfe0cf;color:var(--sub)}
+  button.qbtn .q{font-weight:600;display:block;font-size:.92rem}
+  .answer{font-size:.9rem;color:var(--accent);margin-top:6px;display:none}
+  button.qbtn.asked .answer{display:block}
+  .opts{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+  button.opt{position:relative}
+  button.opt.correct{background:var(--good-bg);border-color:var(--good)}
+  button.opt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+  button.opt:disabled{cursor:default}
+  .fb{display:none;margin-top:10px;padding:12px 14px;border-radius:10px;font-size:.92rem}
+  .fb.show{display:block}
+  .fb.ok{background:var(--good-bg);color:#2c5b3b;border:1px solid #cfe0cf}
+  .fb.ng{background:var(--bad-bg);color:#7e3322;border:1px solid #e7cabf}
+  .actions{display:flex;justify-content:space-between;gap:10px;margin-top:18px;flex-wrap:wrap}
+  .btn{font:inherit;cursor:pointer;border-radius:10px;padding:11px 22px;border:1px solid var(--accent);
+    background:var(--accent);color:#fff;font-weight:600;transition:.15s}
+  .btn:hover{background:#664626}
+  .btn.ghost{background:transparent;color:var(--accent)}
+  .btn.ghost:hover{background:#f0e7da}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .term{border-bottom:1px dotted var(--accent2);cursor:help;position:relative}
+  .term .tip{visibility:hidden;opacity:0;position:absolute;left:50%;bottom:135%;transform:translateX(-50%);
+    width:240px;background:#2c2a26;color:#fff;font-size:.8rem;line-height:1.55;padding:9px 11px;border-radius:8px;
+    z-index:20;transition:.15s;font-weight:400;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+  .term .tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);
+    border:6px solid transparent;border-top-color:#2c2a26}
+  .term:hover .tip{visibility:visible;opacity:1}
+  table.findings,table.summary-tbl{width:100%;border-collapse:collapse;margin:10px 0;font-size:.9rem}
+  table.findings th,table.findings td,table.summary-tbl th,table.summary-tbl td{
+    border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  table.findings th,table.summary-tbl th{background:#f3ece0;color:var(--accent);white-space:nowrap}
+  table.findings th{width:84px}
+  .hint{font-size:.84rem;color:var(--warn);background:var(--warn-bg);border-radius:8px;padding:8px 12px;margin-top:10px;display:none}
+  .hint.show{display:block}
+  .score-badge{text-align:center;font-size:2.1rem;font-weight:800;color:var(--accent);margin:6px 0}
+  .score-sub{text-align:center;color:var(--sub);font-size:.9rem;margin-bottom:8px}
+  .pill{display:inline-block;background:var(--chip);border-radius:16px;padding:3px 11px;font-size:.8rem;margin:3px 4px 0 0;color:var(--accent)}
+  .note{font-size:.82rem;color:var(--sub);margin-top:14px;border-top:1px dashed var(--line);padding-top:10px}
+  /* 四診の図 */
+  .fig-row{display:flex;gap:14px;flex-wrap:wrap;margin:16px 0}
+  .fig-card{flex:1 1 210px;background:#fbf6ec;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .fig-h{font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:8px}
+  .fig-cap{font-size:.82rem;color:var(--sub);margin-top:8px}
+  .fig-legend{margin-top:12px;text-align:left}
+  .leg{font-size:.82rem;color:var(--ink);margin:5px 0;display:flex;gap:7px;align-items:flex-start}
+  .lg-num{display:inline-flex;width:18px;height:18px;border-radius:50%;color:#fff;font-size:.72rem;align-items:center;justify-content:center;font-weight:700;flex:none;margin-top:2px}
+  .lg-dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-top:4px;flex:none}
+  .lg-note{color:var(--sub)}
+  .leg-none{font-size:.82rem;color:var(--sub)}
+  .leg-neg{font-size:.8rem;color:var(--sub);margin-top:3px}
+  /* 生薬構成 */
+  .herb-box{margin:16px 0;background:#fbf6ec;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .herb-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0}
+  .herb-role{color:#fff;font-size:.76rem;font-weight:700;border-radius:14px;padding:3px 11px;white-space:nowrap}
+  .herb-chip{border:1.5px solid;border-radius:8px;padding:3px 10px;font-size:.86rem;background:#fff;font-weight:600}
+  .herb-foot{font-size:.8rem;color:var(--sub);margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+  /* 古典 */
+  .classic-box{margin:16px 0;background:#f7f2e6;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:14px 16px}
+  .cl-src{font-size:.86rem;color:var(--ink);margin-bottom:6px}
+  .cl-quote{margin:8px 0;padding:10px 14px;background:#fffdf8;border:1px dashed var(--line);border-radius:8px;font-size:.95rem;line-height:1.95;color:#3a352c;font-family:"Hiragino Mincho ProN","Yu Mincho",serif}
+  .cl-read{font-size:.86rem;color:var(--sub);margin-top:8px}
+  .cl-modern{font-size:.9rem;color:var(--ink);line-height:1.85;margin-top:10px;background:#eef3ee;border-radius:8px;padding:10px 13px}
+  .cl-tag{display:inline-block;font-size:.72rem;font-weight:700;color:#fff;background:var(--good);border-radius:10px;padding:2px 9px;margin-right:8px;vertical-align:middle}
+  .cl-note{font-size:.82rem;color:var(--sub);margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+  /* 患者カード */
+  .patient-card{display:flex;gap:14px;align-items:flex-start;background:#fbf6ec;border-left:4px solid var(--accent2);border-radius:8px;padding:14px 16px;margin:12px 0;font-size:.96rem}
+  .pc-ava{flex:none;text-align:center}
+  .pc-meta{font-size:.74rem;color:var(--sub);margin-top:2px;font-weight:700}
+  .pc-top{margin-bottom:6px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+  .tone-chip{color:#fff;font-size:.74rem;font-weight:700;border-radius:14px;padding:2px 10px}
+  /* スコアゲージ */
+  .gauge-wrap{display:flex;justify-content:center;margin:8px 0 4px}
+  /* 進捗パネル */
+  #menu-progress{margin:6px 0 16px}
+  .prog-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px;font-size:.9rem;color:var(--ink);margin-bottom:6px}
+  .prog-head span{color:var(--sub);font-size:.84rem}
+  .prog-track{height:12px;background:#e7ddcb;border-radius:8px;overflow:hidden}
+  .prog-fill{height:100%;background:linear-gradient(90deg,#a8753f,#3f7d52);border-radius:8px;transition:width .5s}
+  .prog-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .mini-btn{font:inherit;font-size:.82rem;cursor:pointer;border:1px solid var(--accent);background:#fff;color:var(--accent);border-radius:18px;padding:6px 14px;font-weight:600;transition:.15s}
+  .mini-btn:hover{background:#f0e7da}
+  .mini-btn.gold{background:#bf9b30;border-color:#bf9b30;color:#fff}
+  .mini-btn.ghost{border-color:var(--line);color:var(--sub)}
+  #weak-panel:empty{display:none}
+  #weak-panel{margin-top:12px;background:#fbf6ec;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .weak-h{font-size:.84rem;font-weight:700;color:var(--accent);margin-bottom:10px}
+  .weak-foot,.weak-empty{font-size:.82rem;color:var(--sub);margin-top:8px}
+  .weak-row{display:flex;align-items:center;gap:10px;margin:6px 0}
+  .weak-lab{font-size:.84rem;width:62px;flex:none;color:var(--ink)}
+  .weak-track{flex:1;height:12px;background:#e7ddcb;border-radius:8px;overflow:hidden}
+  .weak-fill{height:100%;border-radius:8px;transition:width .5s}
+  .weak-pct{font-size:.8rem;color:var(--sub);width:40px;text-align:right;flex:none}
+  .rev-list{display:flex;flex-direction:column;gap:8px}
+  .rev-item{font:inherit;text-align:left;cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--ink);transition:.15s}
+  .rev-item:hover{border-color:var(--accent2);background:#fbf4ea}
+  .rev-sc{font-size:.82rem;color:var(--sub);font-weight:600;flex:none}
+  /* 習熟度マップ */
+  .ms-row{margin:12px 0}
+  .ms-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ms-lab{font-size:.86rem;font-weight:700;color:var(--ink);width:62px;flex:none}
+  .ms-stars{letter-spacing:1px;font-size:.95rem}
+  .ms-star{color:#cfc4ac}
+  .ms-star.on{color:#bf9b30}
+  .ms-lv{font-size:.76rem;color:#fff;background:var(--accent2);border-radius:12px;padding:2px 10px;font-weight:700}
+  .ms-track{height:9px;background:#e7ddcb;border-radius:6px;overflow:hidden;margin:6px 0}
+  .ms-fill{height:100%;background:linear-gradient(90deg,#a8753f,#3f7d52);border-radius:6px;transition:width .5s}
+  .ms-meta{font-size:.78rem;color:var(--sub)}
+  .ms-next{color:var(--accent);font-weight:600}
+  /* 称号バッジ */
+  .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+  .badge{border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;background:#fff;opacity:.55;filter:grayscale(.55)}
+  .badge.got{opacity:1;filter:none;border-color:#bf9b30;background:#fffaf0;box-shadow:0 2px 8px rgba(191,155,48,.18)}
+  .badge-seal{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background:#bdb5a3}
+  .badge.got .badge-seal{background:#bf9b30}
+  .badge-name{font-size:.84rem;font-weight:700;color:var(--ink)}
+  .badge-cond{font-size:.72rem;color:var(--sub);margin-top:4px;line-height:1.45}
+  /* 症例カードのバッジ */
+  .cc-top{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:4px}
+  .cc-badge{font-size:.74rem;font-weight:700;color:var(--good);background:#e8f3ea;border-radius:14px;padding:2px 9px;white-space:nowrap}
+  .cc-badge.none{color:var(--sub);background:var(--chip)}
+  .cc-badge.gold{color:#fff;background:#bf9b30}
+  .cc-stars{letter-spacing:-1px}
+  .case-card.is-done{border-color:#cfe0cf}
+  /* 修了証 */
+  #cert{margin-top:14px}
+  .cert-card{position:relative;background:linear-gradient(155deg,#fffdf6,#f7efdf);border:3px double var(--accent2);border-radius:16px;padding:40px 30px 30px;text-align:center;box-shadow:var(--shadow)}
+  .cert-seal{position:absolute;top:18px;right:18px;width:58px;height:58px;border-radius:50%;background:#b1492f;color:#fff;font-weight:800;font-size:.9rem;line-height:1.05;display:flex;align-items:center;justify-content:center;transform:rotate(-8deg);box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  .cert-title{font-size:1.9rem;font-weight:800;letter-spacing:.3em;color:var(--accent);margin:6px 0 4px}
+  .cert-sub{font-size:.86rem;color:var(--sub);margin-bottom:24px}
+  .cert-name-line{font-size:1rem;color:var(--ink);margin:18px 0}
+  .cert-input{font:inherit;font-size:1.15rem;border:none;border-bottom:2px solid var(--accent2);background:transparent;text-align:center;min-width:200px;padding:4px 8px;color:var(--accent)}
+  .cert-input:focus{outline:none;border-color:var(--accent)}
+  .cert-body{font-size:.95rem;color:var(--ink);line-height:1.9;max-width:520px;margin:16px auto}
+  .cert-date{font-size:.95rem;color:var(--ink);margin-top:22px;letter-spacing:.1em}
+  .cert-foot{font-size:.72rem;color:var(--sub);letter-spacing:.18em;margin-top:8px}
+  .step{display:none}
+  .step.active{display:block;animation:fade .3s}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  /* menu */
+  .case-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+  @media(max-width:600px){.case-grid{grid-template-columns:1fr}}
+  .case-card{text-align:left;cursor:pointer;border:1px solid var(--line);background:var(--panel);
+    border-radius:14px;padding:16px 18px;transition:.15s;box-shadow:var(--shadow);font:inherit;color:var(--ink)}
+  .case-card:hover{border-color:var(--accent2);transform:translateY(-2px)}
+  .case-card .dom{font-size:.72rem;font-weight:700;color:#fff;background:var(--accent2);
+    border-radius:20px;padding:2px 10px;display:inline-block;margin-bottom:8px}
+  .case-card h3{margin:.1em 0 .3em;font-size:1.05rem;color:var(--accent)}
+  .case-card p{margin:0;font-size:.86rem;color:var(--sub)}
+  .case-card .rx-tag{margin-top:8px;font-size:.8rem;color:var(--ink);font-weight:600}
+  .menu-note{font-size:.84rem;color:var(--sub);margin-top:18px;background:#fbf6ec;border-radius:10px;padding:12px 14px}
+  .crumb{display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:30;background:var(--bg);padding:8px 0 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+  .crumb-case{font-size:.82rem;color:var(--sub)}
+  .home-btn{font:inherit;font-size:.8rem;cursor:pointer;border:1px solid var(--accent);background:#fff;color:var(--accent);border-radius:18px;padding:5px 13px;font-weight:600;white-space:nowrap;transition:.15s}
+  .home-btn:hover{background:#f0e7da}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>漢方診療チュートリアル</h1>
+    <p>医療面接 → 四診 → 証の組み立て（気血水・八綱・六病位・五臓）→ 方剤選択　｜　対象：初期研修医</p>
+  </header>
+
+  <!-- 症例選択メニュー -->
+  <section id="menu" class="card">
+    <span class="step-tag">症例を選ぶ</span>
+    <h2 class="section">学習する症例を選んでください</h2>
+    <p class="lead">初期研修で出会いやすく、漢方の使いどころがはっきりした5症例を用意しました。各症例で問診から方剤選択までを体験し、6点満点で振り返れます。用語は<span class="term">点線部<span class="tip">点線のついた語にマウスを乗せると解説が出ます。</span></span>にカーソルを合わせると解説が出ます。</p>
+    <div id="menu-progress"></div>
+    <div class="case-grid" id="case-grid"></div>
+    <div class="menu-note">全15症例。初期研修で出会いやすい主訴と頻用方剤を、4つの証の枠組み（気血水・八綱・六病位・五臓）で横断的に学べます。このあと加えるとよい方剤の例：<b>芍薬甘草湯</b>（こむら返り）、<b>牛車腎気丸</b>（高齢者の下肢痛・しびれ・夜間頻尿）、<b>桂枝茯苓丸</b>（瘀血）、<b>小柴胡湯／柴胡桂枝湯</b>（少陽病）。希望があれば追加できます。</div>
+    <div class="note">本ツールは研修医の学習用シミュレーションです。実際の処方は患者個別の状態・併用薬・禁忌（麻黄・甘草・附子・大黄などの注意点）を確認し、指導医とともに判断してください。</div>
+  </section>
+
+  <!-- チュートリアル本体（症例選択で表示） -->
+  <div id="tutorial" style="display:none">
+    <div class="crumb" id="crumb"></div>
+    <div class="progress" id="progress"></div>
+
+    <section class="step card" data-step="0" id="s0"></section>
+    <section class="step card" data-step="1" id="s1"></section>
+    <section class="step card" data-step="2" id="s2"></section>
+    <section class="step card" data-step="3" id="s3"></section>
+    <section class="step card" data-step="4" id="s4"></section>
+    <section class="step card" data-step="5" id="s5"></section>
+  </div>
+
+  <!-- 修了証 -->
+  <div id="cert" style="display:none"></div>
+</div>
+
+<script>
+/* ============ 用語ヘルパー ============ */
+function T(w,tip){return '<span class="term">'+w+'<span class="tip">'+tip+'</span></span>';}
+const t={
+ 血虚:'血の不足。顔色・爪・舌が淡い、皮膚乾燥、月経量減少、めまい。',
+ 水滞:'水（津液）の停滞。浮腫・めまい・心下振水音・軟便・水様鼻汁。水毒ともいう。',
+ 気虚:'気（エネルギー）の不足。倦怠感・食欲不振・声に力がない・易疲労。',
+ 気滞:'気のめぐりの停滞。張った痛み・抑うつ・げっぷ・ガス。',
+ 気逆:'気が逆上する状態。のぼせ・こみ上げる咳や嘔気・動悸。',
+ 瘀血:'血のめぐりの停滞。固定痛・暗紫色・舌下静脈怒張・少腹急結。',
+ 陰虚:'体を潤す陰液（津液）の不足。乾燥・ほてり・寝汗・紅舌少苔。',
+ 八綱:'陰陽・虚実・寒熱・表裏の8つで病態の大枠を捉える基本のものさし。',
+ 表裏:'表＝体表/急性期、裏＝体内/慢性。',
+ 虚実:'虚＝正気の不足/体力低下、実＝邪が盛ん/体力充実。',
+ 寒熱:'寒＝冷えの所見、熱＝熱の所見。',
+ 太陽病:'六病位の最初。急性・体表の段階で悪寒・発熱・頭項強痛・脈浮。',
+ 少陽病:'半表半裏。往来寒熱・胸脇苦満・口苦。柴胡剤の段階。',
+ 陽明病:'裏の実熱が盛んな段階。高熱・便秘・腹満・口渇。承気湯類。',
+ 太陰病:'三陰の入口。裏の虚寒で消化機能低下（食欲不振・軟便・腹満）。',
+ 少陰病:'全身の衰弱と冷え（脈沈微・倦怠）。',
+ 心下振水音:'みぞおちを叩くとポチャポチャ水音。胃内停水＝水滞・脾虚。',
+ 少腹急結:'下腹部の索状の抵抗・圧痛。瘀血の代表的腹証。',
+ 胸脇苦満:'季肋部の張り・圧迫感・抵抗。少陽病・柴胡剤の腹証。',
+ 心下痞硬:'みぞおちのつかえと抵抗。瀉心湯類の腹証。',
+ 肝:'血を蔵し疏泄（気のめぐり）を主る。失調で易怒・抑うつ・めまい・月経異常・筋のひきつり。',
+ 心:'血脈と精神を主る。失調で動悸・不眠・不安。',
+ 脾:'運化（消化吸収）と水液代謝を主る。脾虚で食欲不振・軟便・心下振水音・倦怠。',
+ 肺:'気・呼吸・皮毛・水の上源を主る。失調で咳・易感冒・自汗・乾燥。',
+ 腎:'先天の精・成長生殖・水を主る。腎虚で腰膝のだるさ・夜間頻尿・冷え。',
+ 衛気:'体表をめぐり外邪の侵入を防ぐ気。表証は衛気と外邪の闘い。',
+ 弦脈:'琴の弦のように張った脈。肝の失調・痛み・緊張で触れる。',
+ 浮脈:'軽く触れて拍動を感じる脈。表証の所見。',
+ 沈脈:'強く押して触れる脈。裏証の所見。'
+};
+
+/* ============ 症例データ ============ */
+const CASES=[
+{
+ id:'tsj', domain:'冷え・婦人', rxName:'当帰芍薬散',
+ title:'冷えと疲れやすさ', sub:'42歳女性。足腰の冷えと夕方の疲労感',
+ patient:'42歳 女性。やせ型・色白、事務職。<br><b>主訴：</b>「半年前から足腰の冷えがつらく、夕方になるとぐったり疲れてしまう」<br>これまで大きな病気はなく、健診で貧血の指摘はない。',
+ learn:'血の不足と水のとどこおりが重なった、虚証・寒証の女性の代表像です。',
+ minKey:5,
+ questions:[
+  {q:'冷えはどんな感じ？温まると楽になる？',a:'足腰がいつも冷たく、お風呂や温かい飲み物でホッとします。冷房は苦手です。',key:true},
+  {q:'飲み物は冷たいのと温かいの、どちらが好き？',a:'断然あたたかい方。冷たい物はお腹にきます。',key:true},
+  {q:'月経の様子は？（周期・量・痛み）',a:'周期はやや不順、量は前より少なめ。生理前は下腹部痛と足のむくみがあります。',key:true},
+  {q:'お通じはどう？',a:'どちらかというと軟らかめで、下しやすいです。',key:true},
+  {q:'むくみ・めまい・立ちくらみは？',a:'夕方は足がむくみ、朝はまぶたが腫れぼったい。フワッとするめまいもときどき。',key:true},
+  {q:'のどの渇きや汗は？',a:'のどはあまり渇かず、汗もかきにくい方です。',key:true},
+  {q:'食欲・胃の調子は？',a:'食は細めで、食べるとすぐもたれます。',key:true},
+  {q:'睡眠やイライラ・のぼせは？',a:'眠りは悪くなく、イライラやのぼせは特にありません。',key:false}
+ ],
+ findings:[
+  ['望診','顔色やや白く艶に乏しい。やせ型。皮膚はやや乾燥。'],
+  ['舌診','舌質は<b>淡白</b>でやや胖大、辺縁に'+T('歯痕','舌縁の歯の跡。舌が水分を含み膨らむ（胖大）ため。脾虚・水滞の所見。')+'あり。苔は薄白。'+T('舌下静脈','舌の裏の静脈。怒張・暗紫なら瘀血。本例は怒張なし。')+'の怒張なし。'],
+  ['聞診','声は穏やかで、やや力に乏しい。'],
+  ['脈診','脈は<b>沈・細・やや弱</b>。'],
+  ['腹診','腹力は軟弱。'+T('心下振水音',t.心下振水音)+'(+)。'+T('少腹急結',t.少腹急結)+'は明瞭でない。']
+ ],
+ tongue:{prompt:'この舌診所見（淡白・胖大・歯痕・薄白苔）が最も強く示すのは？',
+  options:[{t:'熱証・実証（紅舌・黄苔）',correct:false},{t:'血の不足と水のとどこおり（'+T('血虚',t.血虚)+'・'+T('水滞',t.水滞)+'）の傾向',correct:true},{t:'瘀血が主体（暗紫色・舌下静脈怒張）',correct:false}],
+  ok:'<b>正解。</b> 舌が淡白で胖大・歯痕は、血の不足（血虚）と水分の停滞（水滞・脾虚）。紅舌黄苔なら熱証、暗紫色なら瘀血です。',
+  ng:'<b>もう一度。</b> 淡白・胖大・歯痕・薄白苔は<b>血虚＋水滞</b>。熱証は紅舌黄苔、瘀血は暗紫色・舌下静脈怒張です。'},
+ axes:[
+  {n:'① 気血水',hint:'顔色不良・舌淡白・経血量少・皮膚乾燥／浮腫・心下振水音・めまい・軟便／軽い倦怠・少食',
+   options:[{t:T('気滞',t.気滞)+'＋'+T('瘀血',t.瘀血)+'が主体',correct:false},{t:T('血虚',t.血虚)+'＋'+T('水滞',t.水滞)+'が主体（軽度の気虚を伴う）',correct:true},{t:'実熱が主体',correct:false}],
+   ok:'<b>その通り。</b> 顔色不良・舌淡白・経血量少は血虚、浮腫・心下振水音・めまい・軟便は水滞。少食・倦怠は軽い気虚です。',
+   ng:'<b>再考を。</b> 張った痛みや固定痛・ほてりは乏しい。中心は<b>血虚＋水滞</b>です。'},
+  {n:'② 八綱',hint:'冷え・温飲を好む・軟便／脈沈細弱・腹力軟弱・声力乏しい／慢性で体表症状なし',
+   options:[{t:'表・実・熱（陽証）',correct:false},{t:T('裏・虚・寒','裏＝体内/慢性、虚＝正気の不足、寒＝冷え。総じて陰証。')+'（陰証）',correct:true},{t:'表・虚・寒（中間証）',correct:false}],
+   ok:'<b>正解。</b> 冷え・温飲（寒）、脈沈細弱・腹力軟弱（虚）、慢性で体表症状なし（裏）＝<b>裏・虚・寒（陰証）</b>。',
+   ng:'<b>再考を。</b> 発熱・脈浮（表）や便秘・ほてり（熱）はない。<b>裏・虚・寒（陰証）</b>です。'},
+  {n:'③ 六病位',hint:'半年来の慢性経過・発熱や悪寒なし・消化機能低下（軟便/少食）・全身の虚寒',
+   options:[{t:T('太陽病',t.太陽病)+'（急性・表証）',correct:false},{t:T('少陽病',t.少陽病)+'（半表半裏）',correct:false},{t:T('三陰（太陰主体）','太陰＝消化機能低下と虚寒、少陰＝全身衰弱と冷え。')+'（慢性・裏の虚寒）',correct:true}],
+   ok:'<b>正解。</b> 慢性・発熱なし・消化機能低下・全身の虚寒は<b>三陰（太陰主体）</b>に位置づきます。',
+   ng:'<b>再考を。</b> 太陽病は急性の悪寒発熱、少陽病は往来寒熱・胸脇苦満が必要。本例は<b>三陰（太陰主体）</b>です。'},
+  {n:'④ 五臓',hint:'血の不足（血を蔵す臓）／運化低下＝軟便・心下振水音・浮腫（水をさばく臓）／下肢の冷え',
+   options:[{t:T('心',t.心)+'・'+T('肺',t.肺)+'の失調が主体',correct:false},{t:T('肝',t.肝)+'（血虚）＋'+T('脾',t.脾)+'（運化低下）が主体',correct:true},{t:T('腎',t.腎)+'虚が単独で主体',correct:false}],
+   ok:'<b>正解。</b> 血を蔵す肝の血虚（月経・めまい・皮膚）と、運化を担う脾の低下（軟便・心下振水音・浮腫）。軽度の腎陽不足も。',
+   ng:'<b>再考を。</b> 動悸・不眠（心）や夜間頻尿（腎単独）は前景でない。中心は<b>肝（血虚）＋脾（運化低下）</b>です。'}
+ ],
+ rxPrompt:'診断は「血虚＋水滞・裏の虚寒・肝脾の失調」。やせ型で冷え・浮腫・めまい・月経不順の女性。最も適した1剤は？',
+ rx:[
+  {name:'当帰芍薬散',ok:true,html:'<b>正解 ― 当帰芍薬散。</b> 当帰・芍薬・川芎で補血・活血、白朮・茯苓・沢瀉で利水。「血を補い水をさばく」構成が、やせ型・冷え・浮腫・月経不順の女性像に最も合致します。'},
+  {name:'当帰四逆加呉茱萸生姜湯',ok:false,html:'<b>次点。</b> 四肢末端の強い冷え・しもやけが前景の<b>寒</b>主体のとき。本例は浮腫など水滞が目立つので当帰芍薬散。'},
+  {name:'加味逍遥散',ok:false,html:'<b>不適。</b> 血虚に<b>気滞・熱</b>（イライラ・のぼせ・不定愁訴）を伴うとき。本例は熱所見に乏しい。'},
+  {name:'桂枝茯苓丸',ok:false,html:'<b>不適。</b> <b>瘀血</b>（暗紫舌・舌下静脈怒張・少腹急結、比較的実証）の方剤。本例は血虚で瘀血所見に乏しい。'},
+  {name:'八味地黄丸',ok:false,html:'<b>不適。</b> <b>腎虚</b>（高齢・腰膝のだるさ・夜間頻尿）が中心のとき。本例は血虚＋水滞が主体。'}
+ ],
+ summary:[
+  ['主な所見','顔色不良・舌淡白・経血量少・皮膚乾燥／浮腫・心下振水音・めまい・軟便／冷え・脈沈細弱・腹力軟弱'],
+  ['① 気血水','<b>血虚＋水滞</b>（軽度の気虚）'],['② 八綱','<b>裏・虚・寒</b>（陰証）'],
+  ['③ 六病位','<b>三陰（太陰主体）</b>'],['④ 五臓','<b>肝（血虚）＋脾（運化低下）</b>、軽度の腎陽不足'],
+  ['方剤','<b>当帰芍薬散</b>：補血・活血＋利水。']
+ ],
+ diff:[
+  {name:'当帰四逆加呉茱萸生姜湯',text:'四肢末端の強い冷え・しもやけが前景（寒主体）。'},
+  {name:'加味逍遥散',text:'血虚＋気滞・熱（のぼせ・不定愁訴）。'},
+  {name:'桂枝茯苓丸',text:'瘀血（暗紫舌・少腹急結、比較的実証）。'},
+  {name:'八味地黄丸',text:'腎虚（腰膝・夜間頻尿）が中心。'}
+ ],
+ caution:'当帰芍薬散に強い禁忌は少ないが、胃腸虚弱例で胃もたれが出ることがある。'
+},
+
+{
+ id:'kkt', domain:'感冒・上気道炎', rxName:'葛根湯',
+ title:'ひき始めの感冒', sub:'28歳男性。昨夕からの悪寒・頭痛・肩こり',
+ patient:'28歳 男性。がっしり型、普段は健康で体力に自信あり。<br><b>主訴：</b>「昨日の夕方からゾクゾクする寒気と頭痛、首肩のこり。今朝は37.8℃」<br>発症から半日。基礎疾患・常用薬なし。',
+ learn:'急性の<b>表証</b>を六病位（太陽病）で捉え、無汗か有汗かで方剤を選び分ける練習です。',
+ minKey:5,
+ questions:[
+  {q:'汗は出ている？',a:'いいえ、汗はかいていません。むしろゾクゾクします。',key:true},
+  {q:'寒気と熱、どちらが強い？',a:'寒気が強く、重ね着しても寒い。熱は微熱程度です。',key:true},
+  {q:'首・肩・後頭部のこわばりは？',a:'後頭部から首・肩がぱんぱんに張ってこわばります。',key:true},
+  {q:'のどの痛みや咳は？',a:'のどは少しイガイガする程度、咳はまだ出ていません。',key:true},
+  {q:'からだの節々の痛みは？',a:'軽くだるい程度で、強い関節痛まではありません。',key:true},
+  {q:'普段の体力・胃腸は？',a:'体力はある方で、胃腸も丈夫です。',key:true},
+  {q:'口の渇き・水分は？',a:'特に強い渇きはありません。',key:false},
+  {q:'基礎疾患・内服は？',a:'特にありません。',key:false}
+ ],
+ findings:[
+  ['望診','顔はやや紅潮、苦悶様ではない。舌質は淡紅、苔は薄白でやや湿。'],
+  ['舌診','淡紅・薄白苔。'+T('紅舌黄苔','熱が盛んな所見。本例にはない＝まだ熱化していない。')+'はみられない。'],
+  ['聞診','声に力があり、軽い鼻声。'],
+  ['脈診','脈は<b>'+T('浮',t.浮脈)+'・緊</b>でやや有力。'],
+  ['腹診','腹力は中等度以上。虚証を示す所見はない。']
+ ],
+ tongue:{prompt:'無汗・悪寒（寒気が強い）・発熱・脈浮緊。この組み合わせが示す病態は？',
+  options:[{t:'裏の実熱（'+T('陽明病',t.陽明病)+'）',correct:false},{t:'外邪（風寒）による'+T('表寒証','体表で風寒の邪と衛気が闘う段階。悪寒・無汗・脈浮緊。')+'（まだ熱化していない）',correct:true},{t:T('血虚',t.血虚)+'が主体',correct:false}],
+  ok:'<b>正解。</b> 悪寒が強く無汗、脈が浮で緊。風寒が体表にとどまる<b>表寒証</b>で、まだ裏に熱化していません。',
+  ng:'<b>もう一度。</b> 便秘・高熱・口渇（裏熱）も慢性の血虚もない。急性の悪寒・無汗・脈浮緊は<b>表寒証</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'発症半日の急性外感。慢性の内傷（血虚・水滞・気虚）を示す所見は乏しい',
+   options:[{t:'血虚が主体',correct:false},{t:'明らかな気血水の虚はなく、'+T('外感表証','外から侵入した邪による体表の証。内傷＝体内の虚とは区別する。')+'が主体',correct:true},{t:'水滞が主体',correct:false}],
+   ok:'<b>正解。</b> 急性の外感では、まず邪と病位を捉えます。気血水の虚は本例では前景化していません。気血水が常に主軸とは限らない好例です。',
+   ng:'<b>再考を。</b> 半日で発症した急性の外感で、慢性の血虚・水滞の所見はありません。主軸は<b>外感表証</b>です。'},
+  {n:'② 八綱',hint:'無汗・悪寒（寒）／体力充実・脈やや有力（実）／急性で体表（表）',
+   options:[{t:T('表・実・寒','無汗で脈浮緊＝表実。汗が出て脈浮弱なら表虚＝桂枝湯証。')+'（風寒表実）',correct:true},{t:'裏・虚・寒',correct:false},{t:'表・虚・寒（自汗あり）',correct:false}],
+   ok:'<b>正解。</b> 無汗・脈浮緊・体力充実は<b>表・実・寒</b>。自汗があり脈浮弱なら「表虚」で桂枝湯証になります。',
+   ng:'<b>再考を。</b> 慢性の裏虚ではない。無汗・脈浮緊の本例は<b>表・実・寒</b>。有汗・脈浮弱なら表虚（桂枝湯）です。'},
+  {n:'③ 六病位',hint:'悪寒・発熱・頭項のこわばり・脈浮 ＝ 発症初期で邪は体表',
+   options:[{t:T('太陽病',t.太陽病)+'（急性・表証）',correct:true},{t:T('少陽病',t.少陽病)+'（半表半裏）',correct:false},{t:T('陽明病',t.陽明病)+'（裏実熱）',correct:false}],
+   ok:'<b>正解。</b> 悪寒・発熱・項背のこわばり・脈浮は<b>太陽病</b>そのもの。六病位が最も活きる場面です。',
+   ng:'<b>再考を。</b> 往来寒熱・胸脇苦満（少陽）も高熱・便秘（陽明）もない。発症初期の表証は<b>太陽病</b>です。'},
+  {n:'④ 五臓',hint:'内傷の臓の証より、体表の防御が破られた段階',
+   options:[{t:T('肝',t.肝)+'の疏泄失調',correct:false},{t:'特定の臓の虚より、'+T('肺衛','肺がつかさどる体表の防御（衛気）。表証は肺衛に外邪が及んだ段階。')+'に外邪が及んだ段階',correct:true},{t:T('腎',t.腎)+'虚',correct:false}],
+   ok:'<b>正解。</b> 急性外感ではまず体表（肺衛・衛気）が外邪と闘います。特定臓腑の内傷を論じる段階ではありません。',
+   ng:'<b>再考を。</b> 肝や腎の慢性の虚ではない。体表の防御＝<b>肺衛</b>に外邪が及んだ段階です。'}
+ ],
+ rxPrompt:'28歳・体力充実・無汗・悪寒発熱・項背のこわばり・脈浮緊。太陽病の表実。最も適した1剤は？',
+ rx:[
+  {name:'葛根湯',ok:true,html:'<b>正解 ― 葛根湯。</b> 麻黄＋桂枝で発汗解表、葛根で項背のこわばりを緩める。<b>無汗</b>の表実・太陽病の第一選択。早期に使うほど効果的です。'},
+  {name:'桂枝湯',ok:false,html:'<b>不適。</b> 桂枝湯は<b>自汗あり・脈浮弱</b>の「表虚」の太陽病に。本例は無汗・脈浮緊の表実なので葛根湯。'},
+  {name:'麻黄湯',ok:false,html:'<b>次点。</b> 高熱・強い体節痛・喘が前景の表実（インフルエンザ様）に。項背のこわばりが目立つ本例はまず葛根湯。'},
+  {name:'麻黄附子細辛湯',ok:false,html:'<b>不適。</b> 高齢・虚弱で悪寒主体・脈沈（少陰病）に。本例は若く脈浮緊の太陽病です。'},
+  {name:'小柴胡湯',ok:false,html:'<b>不適。</b> こじれて往来寒熱・胸脇苦満が出た少陽病に。発症半日の表証には早すぎます。'}
+ ],
+ summary:[
+  ['主な所見','無汗・悪寒（寒気強い）・微熱／項背のこわばり／脈浮緊・体力充実'],
+  ['① 気血水','明らかな虚はなく外感表証が主体'],['② 八綱','<b>表・実・寒</b>（風寒表実）'],
+  ['③ 六病位','<b>太陽病</b>'],['④ 五臓','肺衛（体表の防御）に外邪'],
+  ['方剤','<b>葛根湯</b>：発汗解表＋項背のこわばりを緩める。']
+ ],
+ diff:[
+  {name:'桂枝湯',text:'自汗あり・脈浮弱の「表虚」の太陽病。'},
+  {name:'麻黄湯',text:'高熱・強い体節痛・喘が前景の表実。'},
+  {name:'麻黄附子細辛湯',text:'高齢・虚弱で悪寒主体・脈沈（少陰病）。'},
+  {name:'小柴胡湯',text:'こじれて往来寒熱・胸脇苦満（少陽病）。'}
+ ],
+ caution:'葛根湯は<b>麻黄（エフェドリン類）と甘草</b>を含む。動悸・不眠・排尿障害、高血圧・心疾患・高齢者で注意。甘草による偽アルドステロン症（低K血症・浮腫・血圧上昇）にも留意。'
+},
+
+{
+ id:'rkk', domain:'消化器（胃腸）', rxName:'六君子湯',
+ title:'胃もたれと食欲不振', sub:'55歳女性。数か月続く心窩部のつかえ・食欲低下',
+ patient:'55歳 女性。やせ型、疲れやすい。<br><b>主訴：</b>「みぞおちがつかえて食欲がない。少し食べるとすぐもたれて張る」<br>数か月持続。上部内視鏡で器質的異常なし（機能性ディスペプシア）。半年で体重2kg減。',
+ learn:'<b>脾の気虚</b>（消化機能の低下）に水のとどこおりが重なった、慢性・裏の虚寒の代表例です。',
+ minKey:5,
+ questions:[
+  {q:'食欲と食後の様子は？',a:'食欲がなく、少し食べるとすぐもたれて張ります。',key:true},
+  {q:'冷えはある？温めると楽？',a:'手足が冷え、温かい食事だと胃が楽になります。',key:true},
+  {q:'全身の疲労感は？',a:'疲れやすく、午後はぐったりします。',key:true},
+  {q:'お通じは？',a:'軟便気味で、ときどき下します。',key:true},
+  {q:'口の渇き・水分は？',a:'あまり渇かず、冷たい物を飲むと胃が重くなります。',key:true},
+  {q:'悪心・げっぷは？',a:'軽い吐き気とげっぷがあります。',key:true},
+  {q:'のぼせ・イライラ・口の苦みは？',a:'閉経後ですが、のぼせやイライラ、口の苦みは特にありません。',key:false},
+  {q:'睡眠は？',a:'眠りはまずまずです。',key:false}
+ ],
+ findings:[
+  ['望診','顔色はつやがなく、やや痩せ。舌質は<b>淡白・胖大</b>で歯痕、苔は白くやや湿（'+T('膩苔','べったり厚い苔。痰湿が強いときの所見。本例は膩ではない。')+'ではない）。'],
+  ['舌診','淡白・胖大・歯痕・白湿苔。'],
+  ['聞診','声は小さく力なく、ときにげっぷ。'],
+  ['脈診','脈は<b>沈・弱</b>（緩）。'],
+  ['腹診','腹力は軟弱。'+T('心下痞硬','みぞおちのつかえと抵抗。ここでは軟らかいつかえ。')+'（軟）、'+T('心下振水音',t.心下振水音)+'(+)。']
+ ],
+ tongue:{prompt:'淡白・胖大・歯痕・白くやや湿った苔。最も合致する病態は？',
+  options:[{t:'胃熱（紅舌・黄苔）',correct:false},{t:T('脾',t.脾)+'の'+T('気虚',t.気虚)+'＋'+T('水湿','体内の余分な水分。脾虚で水をさばけずたまる。')+'（脾気虚＋水滞）',correct:true},{t:T('陰虚',t.陰虚)+'（紅・無苔・乾燥）',correct:false}],
+  ok:'<b>正解。</b> 淡白・胖大・歯痕は脾気虚、白く湿った苔は水湿。消化機能の低下と水のとどこおりを示します。',
+  ng:'<b>もう一度。</b> 胃熱なら紅舌黄苔、陰虚なら紅く乾いた少苔。淡白・胖大・湿苔は<b>脾気虚＋水滞</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'倦怠・少食・声力低下・脈弱／心下振水音・軟便・舌胖大',
+   options:[{t:'瘀血が主体',correct:false},{t:T('気虚',t.気虚)+'（脾気虚）＋'+T('水滞',t.水滞)+'が主体',correct:true},{t:'実熱が主体',correct:false}],
+   ok:'<b>正解。</b> 倦怠・少食・声力低下・脈弱は気虚（脾気虚）、心下振水音・軟便・舌胖大は水滞。両者が主体です。',
+   ng:'<b>再考を。</b> 瘀血（固定痛・暗紫舌）も実熱（便秘・口渇・紅舌黄苔）もない。中心は<b>脾気虚＋水滞</b>です。'},
+  {n:'② 八綱',hint:'冷え・温飲で楽（寒）／倦怠・脈沈弱・腹力軟弱（虚）／慢性の消化器（裏）',
+   options:[{t:'裏・実・熱（承気湯証）',correct:false},{t:T('裏・虚・寒','体内・慢性で、正気が不足し冷えている陰証。')+'（陰証）',correct:true},{t:'表・実・寒',correct:false}],
+   ok:'<b>正解。</b> 冷え（寒）・倦怠と脈沈弱（虚）・慢性の消化器症状（裏）で<b>裏・虚・寒（陰証）</b>です。',
+   ng:'<b>再考を。</b> 便秘・腹満・高熱の裏実熱でも、急性の表証でもない。<b>裏・虚・寒</b>です。'},
+  {n:'③ 六病位',hint:'慢性の消化機能低下と冷え・倦怠',
+   options:[{t:T('陽明病',t.陽明病)+'（裏実熱）',correct:false},{t:T('太陰病',t.太陰病)+'（裏の虚寒・消化機能低下）',correct:true},{t:T('少陽病',t.少陽病)+'（半表半裏）',correct:false}],
+   ok:'<b>正解。</b> 裏の虚寒で消化機能が落ちた病態は<b>太陰病</b>に位置づきます。',
+   ng:'<b>再考を。</b> 陽明病は裏の実熱（便秘・高熱）、少陽病は胸脇苦満・口苦。本例は<b>太陰病</b>です。'},
+  {n:'④ 五臓',hint:'食欲不振・もたれ・軟便・心下振水音・倦怠 ＝ 消化と水をさばく臓の低下',
+   options:[{t:T('肝',t.肝)+'の疏泄失調が主体',correct:false},{t:T('脾',t.脾)+'（胃）の気虚＝運化低下が主体',correct:true},{t:T('腎',t.腎)+'虚が主体',correct:false}],
+   ok:'<b>正解。</b> 運化（消化吸収）と水液代謝を担う脾（胃）の気虚が中心。だから補気健脾の方剤を選びます。',
+   ng:'<b>再考を。</b> 易怒・脇の張り（肝）や夜間頻尿・腰膝（腎）は前景でない。中心は<b>脾（胃）の気虚</b>です。'}
+ ],
+ rxPrompt:'診断は「脾気虚＋水滞・裏の虚寒（太陰）」。やせ型で食欲不振・もたれ・心下振水音。最も適した1剤は？',
+ rx:[
+  {name:'六君子湯',ok:true,html:'<b>正解 ― 六君子湯。</b> 四君子湯（人参・白朮・茯苓・甘草）で補気健脾、半夏・陳皮で和胃・化痰、生姜大棗。脾気虚＋胃の停滞（水滞）に。食欲・もたれを改善し、グレリン分泌を促すエビデンスも。'},
+  {name:'補中益気湯',ok:false,html:'<b>次点。</b> 気虚に<b>気の下垂</b>（内臓下垂・脱肛・強い倦怠・易感冒）を伴うとき。本例はもたれ・心下振水音が前景で六君子湯。'},
+  {name:'半夏瀉心湯',ok:false,html:'<b>不適。</b> 心下痞硬に悪心・下痢を伴い、口苦など<b>熱</b>を交える（寒熱錯雑）とき。本例は寒・虚が主で熱所見に乏しい。'},
+  {name:'五苓散',ok:false,html:'<b>不適。</b> 口渇＋尿量減少＋浮腫や急性の嘔吐下痢（急性の水滞）に。本例は慢性の脾気虚が基盤です。'},
+  {name:'大建中湯',ok:false,html:'<b>不適。</b> 腹部の強い冷え・腹満・腸蠕動不穏・術後イレウス傾向に。本例の心窩部症状とは部位・病態が異なります。'}
+ ],
+ summary:[
+  ['主な所見','食欲不振・もたれ・心窩部のつかえ・悪心／軟便・冷え・倦怠／舌淡白胖大・心下振水音・脈沈弱'],
+  ['① 気血水','<b>脾気虚＋水滞</b>'],['② 八綱','<b>裏・虚・寒</b>（陰証）'],
+  ['③ 六病位','<b>太陰病</b>'],['④ 五臓','<b>脾（胃）の気虚＝運化低下</b>'],
+  ['方剤','<b>六君子湯</b>：補気健脾＋和胃・化痰。']
+ ],
+ diff:[
+  {name:'補中益気湯',text:'気虚＋気の下垂（内臓下垂・脱肛・強い倦怠）。'},
+  {name:'半夏瀉心湯',text:'心下痞硬＋悪心下痢＋熱（寒熱錯雑）。'},
+  {name:'五苓散',text:'口渇＋尿量減少＋急性の嘔吐下痢・浮腫。'},
+  {name:'大建中湯',text:'腹部の強い冷え・腹満・蠕動不穏。'}
+ ],
+ caution:'六君子湯は<b>甘草</b>を含む。長期・他剤併用時は偽アルドステロン症（低K血症・浮腫）に注意。'
+},
+
+{
+ id:'yks', domain:'精神・高齢者', rxName:'抑肝散',
+ title:'高齢者の興奮・易怒・不眠', sub:'80歳男性。認知症。夕方からの興奮と易怒・不眠',
+ patient:'80歳 男性。アルツハイマー型認知症で通院中、コリンエステラーゼ阻害薬を内服。<br><b>家族の訴え：</b>「最近とても怒りっぽく、夕方から夜に落ち着かず興奮して眠らない。介護に抵抗し、大声を出すことも」',
+ learn:'認知症の<b>行動・心理症状（BPSD）</b>を、肝の高ぶり（疏泄の失調）として捉える練習です。',
+ minKey:5,
+ questions:[
+  {q:'症状が強いのはいつ？',a:'夕方から夜にかけて落ち着かず興奮します（日没のころに目立つ）。',key:true},
+  {q:'怒りや興奮の様子は？',a:'ささいなことで怒鳴り、ときに手が出ることもあります。',key:true},
+  {q:'睡眠は？',a:'夜中に起きて歩き回り、なかなか眠りません。',key:true},
+  {q:'ふるえや体のこわばりは？',a:'手のふるえがあり、体に力が入ってこわばる感じがあります。',key:true},
+  {q:'のぼせ・顔の赤みは？',a:'興奮すると顔が赤くなり、気が高ぶる様子です。',key:true},
+  {q:'体格・体力・食事は？',a:'体格は中等度、食事はまずまず摂れています。',key:true},
+  {q:'お通じ・腹部は？',a:'便通はほぼ正常です。',key:false},
+  {q:'内服薬・既往は？',a:'認知症の薬を内服中。ほかに大きな既往はありません。',key:false}
+ ],
+ findings:[
+  ['望診','表情は険しく落ち着かない。舌質は淡紅〜やや紅、苔は薄い。'],
+  ['舌診','やや紅で薄苔。明らかな淡白胖大（脾虚）や厚い黄苔（実熱）ではない。'],
+  ['聞診','早口で大声になりやすい。'],
+  ['脈診','脈は<b>'+T('弦',t.弦脈)+'</b>（やや）。'],
+  ['腹診','腹力は中等度。'+T('腹直筋の攣急','腹直筋が棒のように緊張する所見。肝の高ぶり・筋緊張亢進に対応し、抑肝散の腹証。')+'（左優位）、臍上の拍動を触れることがある。']
+ ],
+ tongue:{prompt:'易怒・興奮・手のふるえ・筋のこわばり・弦脈。これらが最も示すのは？',
+  options:[{t:T('脾',t.脾)+'の気虚',correct:false},{t:T('肝',t.肝)+'の高ぶり（'+T('肝陽上亢／肝風','肝の機能が過剰に高ぶった状態。のぼせ・易怒、ふるえ・筋緊張（肝風）として現れる。')+'）',correct:true},{t:T('腎',t.腎)+'陽虚',correct:false}],
+  ok:'<b>正解。</b> 易怒・のぼせは肝の高ぶり、ふるえ・筋のこわばりは肝風、弦脈も肝の所見。「肝」の失調が前面に出ています。',
+  ng:'<b>もう一度。</b> 脾気虚は倦怠・軟便、腎陽虚は冷え・夜間頻尿。易怒・ふるえ・弦脈は<b>肝の高ぶり</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'怒り・のぼせ・気の高ぶり（気が上に突き上げる）／高齢で血は不足しやすい',
+   options:[{t:'水滞が主体',correct:false},{t:'肝の'+T('気の高ぶり（気逆）','気が上に逆上した状態。怒り・のぼせ・興奮として現れる。')+'が主体、しばしば血虚を伴う',correct:true},{t:'純然たる腑の実熱',correct:false}],
+   ok:'<b>正解。</b> 怒り・のぼせ・興奮は気の高ぶり（気逆）。高齢で肝血が不足すると肝はいっそう高ぶりやすくなります。',
+   ng:'<b>再考を。</b> 浮腫・心下振水音（水滞）や便秘・腹満（腑の実熱）が主ではない。中心は<b>肝の気の高ぶり</b>です。'},
+  {n:'② 八綱',hint:'肝の高ぶり（標は実・熱寄り）を、高齢で正気が衰えた体に生じている',
+   options:[{t:'単純な裏・虚・寒',correct:false},{t:'肝の高ぶり（亢進）を背景に高齢で虚を伴う（'+T('本虚標実','根本（本）は虚だが、表に現れる症状（標）は実・亢進。')+'）',correct:true},{t:'表・実・寒',correct:false}],
+   ok:'<b>正解。</b> 表に出る興奮・易怒は実・熱寄り（標実）ですが、根本には高齢の虚（本虚）があります。だから瀉一辺倒にしません。',
+   ng:'<b>再考を。</b> 単純な虚寒でも表証でもない。高ぶり（標実）と高齢の虚（本虚）が併存する<b>本虚標実</b>です。'},
+  {n:'③ 六病位',hint:'外感（かぜ）の病期ではなく、慢性の内臓の失調',
+   options:[{t:T('太陽病',t.太陽病)+'（急性・表証）',correct:false},{t:'外感の病期ではなく、内傷（五臓＝肝）で捉える病態',correct:true},{t:T('少陽病',t.少陽病)+'（半表半裏）',correct:false}],
+   ok:'<b>正解。</b> 六病位は急性熱性疾患の枠組み。BPSDのような慢性の内傷は<b>五臓（肝）</b>で捉えます。弦脈から少陽を連想しても、傷寒の少陽病とは別物です。',
+   ng:'<b>再考を。</b> 発熱・脈浮（太陽）も往来寒熱（少陽）もない。慢性の内傷は<b>五臓（肝）</b>で捉えます。'},
+  {n:'④ 五臓',hint:'怒り・ふるえ・筋緊張・弦脈 ＝ 疏泄を主る臓。あわせて消化（脾）を守る',
+   options:[{t:T('肺',t.肺)+'が主体',correct:false},{t:T('肝',t.肝)+'（疏泄の失調・高ぶり）が主体、'+T('脾',t.脾)+'を巻き込む',correct:true},{t:T('腎',t.腎)+'虚が単独で主体',correct:false}],
+   ok:'<b>正解。</b> 中心は肝。方剤名の「抑肝」は肝を抑える意で、同時に脾を扶けます（肝が高ぶると脾が傷められやすいため）。',
+   ng:'<b>再考を。</b> 咳・易感冒（肺）や夜間頻尿（腎単独）ではない。中心は<b>肝</b>で、脾を巻き込みます。'}
+ ],
+ rxPrompt:'診断は「肝の高ぶり（本虚標実）＝五臓では肝」。高齢者の易怒・興奮・不眠・ふるえ・弦脈。最も適した1剤は？',
+ rx:[
+  {name:'抑肝散',ok:true,html:'<b>正解 ― 抑肝散。</b> 釣藤鈎・柴胡で平肝（肝の高ぶりを鎮める）、当帰・川芎で肝血を補い、白朮・茯苓で脾を扶ける。認知症のBPSD（易怒・興奮・不眠）で広く用いられ、RCTの報告もあります。'},
+  {name:'酸棗仁湯',ok:false,html:'<b>不適。</b> 心身の疲れで眠れない（虚労の不眠）に。興奮・易怒・筋緊張が前景の本例は抑肝散。'},
+  {name:'加味帰脾湯',ok:false,html:'<b>不適。</b> 心脾両虚（貧血・不安・抑うつ・健忘・不眠）で気血を補うとき。攻撃性・易怒が強い本例とは方向が違います。'},
+  {name:'加味逍遥散',ok:false,html:'<b>不適。</b> 中年女性の血虚＋気滞・熱（不定愁訴・のぼせ・イライラ）に。高齢男性のBPSDには抑肝散が定番です。'},
+  {name:'黄連解毒湯',ok:false,html:'<b>不適。</b> 比較的体力があり、のぼせ・顔面紅潮・出血傾向など実熱が強いとき。本例は高齢で虚を伴い、肝の高ぶりが主です。'}
+ ],
+ summary:[
+  ['主な所見','夕方からの興奮・易怒・大声／不眠・徘徊／手のふるえ・筋のこわばり・弦脈・腹直筋の攣急'],
+  ['① 気血水','<b>肝の気の高ぶり（気逆）</b>、血虚を伴う'],['② 八綱','肝の亢進（標実）＋高齢の虚（<b>本虚標実</b>）'],
+  ['③ 六病位','外感ではなく内傷（五臓）で捉える'],['④ 五臓','<b>肝（疏泄の失調）</b>、脾を巻き込む'],
+  ['方剤','<b>抑肝散</b>：平肝＋補血＋健脾。']
+ ],
+ diff:[
+  {name:'酸棗仁湯',text:'心身の疲れによる不眠（虚労虚煩）。'},
+  {name:'加味帰脾湯',text:'心脾両虚（不安・抑うつ・健忘・不眠）。'},
+  {name:'加味逍遥散',text:'中年女性の血虚＋気滞・熱の不定愁訴。'},
+  {name:'黄連解毒湯',text:'体力ありの実熱（のぼせ・顔面紅潮・出血傾向）。'}
+ ],
+ caution:'抑肝散は<b>甘草</b>を含み、高齢者で偽アルドステロン症（低K血症・浮腫・血圧上昇、まれに横紋筋融解）に注意し、Kをモニターする。胃腸虚弱例には<b>抑肝散加陳皮半夏</b>を用いる。'
+},
+
+{
+ id:'bmt', domain:'呼吸器', rxName:'麦門冬湯',
+ title:'長引く乾いた咳', sub:'48歳女性。感冒後3週間続く痰の少ない咳',
+ patient:'48歳 女性。<br><b>主訴：</b>「3週間前のかぜのあと、乾いた咳が止まらない。発作的にこみ上げて連続して咳き込み、夜間や乾燥で悪化。咳き込むと顔が赤くなる。のどが乾く」<br>発熱・悪寒は今はない。',
+ learn:'感冒後の遷延性の咳を、<b>肺の陰虚・燥</b>（うるおい不足）として捉える練習です。「水」を不足の側面から考えます。',
+ minKey:5,
+ questions:[
+  {q:'痰は出る？性状は？',a:'痰はほとんど出ず、出てもごくわずかで切れにくいです。',key:true},
+  {q:'咳の誘因は？',a:'乾いた部屋や、話していると、こみ上げて連続して咳き込みます。',key:true},
+  {q:'のどの様子は？',a:'のどが乾いてイガイガし、うるおいがほしい感じです。',key:true},
+  {q:'発熱・悪寒は？',a:'今は熱も悪寒もありません（かぜの急性期は過ぎています）。',key:true},
+  {q:'ゼーゼー（喘鳴）や息苦しさは？',a:'ゼーゼーはなく、強い息苦しさもありません。',key:true},
+  {q:'黄色い痰が多く出る？',a:'いいえ、黄色い痰が多いわけではありません。',key:true},
+  {q:'全身の様子・乾燥は？',a:'少し疲れやすく、口や肌も乾きがちです。',key:false},
+  {q:'強い冷えはある？',a:'特に強い冷えはありません。',key:false}
+ ],
+ findings:[
+  ['望診','顔色は普通だが咳き込み時に紅潮。舌質は<b>やや紅</b>、苔は少なく乾燥（'+T('少苔・乾燥','苔が薄く乾いている。津液（うるおい）の不足＝陰虚の所見。')+'）。'],
+  ['舌診','やや紅で乾いた少苔。'],
+  ['聞診','連続する乾いた咳。痰がらみは目立たない。'],
+  ['脈診','脈は<b>細・やや数</b>。'],
+  ['腹診','腹力は中等度、特記すべき所見なし。']
+ ],
+ tongue:{prompt:'やや紅で乾いた少苔・痰が少ない・のどの乾燥。最も合致する病態は？',
+  options:[{t:'寒湿（淡白・胖大・湿った苔）',correct:false},{t:T('陰虚',t.陰虚)+'・'+T('燥','うるおい（津液）が不足し乾いた状態。乾いた咳・咽乾・少痰。')+'（うるおい不足）',correct:true},{t:T('痰熱','熱を帯びた粘い痰。紅舌・黄膩苔・多い黄色痰。')+'（紅・黄膩苔・多い黄色痰）',correct:false}],
+  ok:'<b>正解。</b> 紅めで乾いた少苔、少痰、咽の乾きは陰虚・燥。うるおいを補い、肺を潤す方針になります。',
+  ng:'<b>もう一度。</b> 寒湿なら淡白・湿苔、痰熱なら黄色い痰と黄膩苔。乾いた少苔・少痰は<b>陰虚・燥</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'うるおい（津液＝水）の不足／こみ上げる咳は気が上に突き上げる',
+   options:[{t:'水の過剰なとどこおり（水滞）が主体',correct:false},{t:'うるおい（津液）の不足＝'+T('陰虚',t.陰虚)+'・燥が主体（こみ上げる'+T('気逆',t.気逆)+'を伴う）',correct:true},{t:'瘀血が主体',correct:false}],
+   ok:'<b>正解。</b> ここでの「水」は停滞ではなく<b>不足</b>。津液が乏しく乾く陰虚・燥に、上に突き上げる気逆（こみ上げる咳）が重なります。',
+   ng:'<b>再考を。</b> 浮腫・水様痰の水滞でも瘀血でもない。乾いた少痰・咽乾は<b>津液不足＝陰虚・燥</b>です。'},
+  {n:'② 八綱',hint:'急性期は過ぎ体内の問題（裏）／うるおい不足で内に熱がこもる（虚熱）',
+   options:[{t:'表・実・寒（風寒表実）',correct:false},{t:'裏の燥・（虚）熱（'+T('陰虚','陰液の不足で相対的に熱がこもる＝虚熱。')+'）',correct:true},{t:'裏・実・寒',correct:false}],
+   ok:'<b>正解。</b> 体内（裏）のうるおい不足で乾き、相対的に熱がこもる（虚熱）状態。実寒や表寒とは逆向きです。',
+   ng:'<b>再考を。</b> 表寒（悪寒・無汗）でも裏の実寒でもない。乾いて熱がこもる<b>裏の燥・虚熱（陰虚）</b>です。'},
+  {n:'③ 六病位',hint:'発症3週で発熱・悪寒なし。急性外感の病期は過ぎている',
+   options:[{t:T('太陽病',t.太陽病)+'（急性・表証）',correct:false},{t:'急性の病期でなく、内傷（肺の陰虚）で捉える',correct:true},{t:T('少陽病',t.少陽病)+'（半表半裏）',correct:false}],
+   ok:'<b>正解。</b> 急性外感の段階は過ぎ、感冒後に残った肺のうるおい不足（内傷）として捉えます。',
+   ng:'<b>再考を。</b> 悪寒発熱・脈浮（太陽）も往来寒熱（少陽）もない。感冒後の<b>肺の陰虚（内傷）</b>です。'},
+  {n:'④ 五臓',hint:'乾いた咳・咽の乾き ＝ 呼吸と皮毛・うるおいを主る臓（と胃）',
+   options:[{t:T('脾',t.脾)+'の陽虚が主体',correct:false},{t:T('肺',t.肺)+'（と胃）の陰虚・燥が主体',correct:true},{t:T('腎',t.腎)+'陽虚が主体',correct:false}],
+   ok:'<b>正解。</b> 中心は肺（と胃）のうるおい不足。麦門冬湯は肺胃の陰を養い、肺を潤して気逆を降ろします。',
+   ng:'<b>再考を。</b> 脾陽虚（軟便・冷え）や腎陽虚（夜間頻尿・冷え）ではない。中心は<b>肺（と胃）の陰虚・燥</b>です。'}
+ ],
+ rxPrompt:'診断は「肺の陰虚・燥＋気逆」。痰の少ない、こみ上げる乾いた遷延性の咳・咽の乾き。最も適した1剤は？',
+ rx:[
+  {name:'麦門冬湯',ok:true,html:'<b>正解 ― 麦門冬湯。</b> 麦門冬で肺胃を潤し、半夏で気逆を降ろし、人参・粳米・大棗・甘草で胃気を養う。「大逆上気・咽喉不利」＝こみ上げる乾いた咳・咽の乾きに。痰の少ない遷延性咳嗽の代表です。'},
+  {name:'麻杏甘石湯',ok:false,html:'<b>不適。</b> 熱を伴う咳・喘鳴、口渇、黄色い痰（肺熱・痰熱）に。本例は乾いて少痰の燥なので麦門冬湯。'},
+  {name:'小青竜湯',ok:false,html:'<b>不適。</b> 水様鼻汁・くしゃみ・薄い水様痰（寒の水滞＝アレルギー性鼻炎・喘息）に。乾いた咳の本例とは逆向きです。'},
+  {name:'葛根湯',ok:false,html:'<b>不適。</b> 感冒初期の表寒実に。発症3週で表証のない本例には適しません。'},
+  {name:'半夏厚朴湯',ok:false,html:'<b>不適。</b> のどの異物感（梅核気）・気滞・不安に。乾いた咳・咽乾の陰虚とは病態が異なります。'}
+ ],
+ summary:[
+  ['主な所見','痰の少ない・こみ上げる乾いた咳／咽の乾き・夜間や乾燥で悪化／舌やや紅・少苔乾燥・脈細やや数'],
+  ['① 気血水','<b>津液不足＝陰虚・燥</b>＋気逆'],['② 八綱','<b>裏の燥・虚熱</b>（陰虚）'],
+  ['③ 六病位','急性外感は過ぎ、内傷（肺の陰虚）'],['④ 五臓','<b>肺（と胃）の陰虚・燥</b>'],
+  ['方剤','<b>麦門冬湯</b>：肺胃を潤し気逆を降ろす。']
+ ],
+ diff:[
+  {name:'麻杏甘石湯',text:'熱を伴う咳・喘鳴・口渇・黄色痰（肺熱）。'},
+  {name:'小青竜湯',text:'水様鼻汁・薄い水様痰（寒の水滞）。'},
+  {name:'葛根湯',text:'感冒初期の表寒実。'},
+  {name:'半夏厚朴湯',text:'のどの異物感（梅核気）・気滞・不安。'}
+ ],
+ caution:'麦門冬湯は<b>甘草</b>を含む。長期・他剤併用時は偽アルドステロン症に注意。'
+},
+
+{
+ id:'mot', domain:'感冒・インフルエンザ', rxName:'麻黄湯',
+ title:'高熱と強い体節痛', sub:'25歳男性。当日発症の高熱・悪寒・関節痛・無汗',
+ patient:'25歳 男性。頑健、基礎疾患なし。インフルエンザ流行期。<br><b>主訴：</b>「今朝から急に39℃の高熱、ゾクゾクする強い悪寒、全身の関節と腰の痛み、頭痛。汗は出ない」発症当日。',
+ learn:'閉じた表（無汗）で邪が強い<b>表実</b>の極型。葛根湯・桂枝湯との発汗剤の使い分けを学びます。',
+ minKey:5,
+ questions:[
+  {q:'汗は出ている？',a:'まったく出ていません。ゾクゾク悪寒がします。',key:true},
+  {q:'熱の高さは？',a:'39℃の高熱です。',key:true},
+  {q:'関節や筋肉の痛みは？',a:'全身の節々と腰がズキズキ強く痛みます。',key:true},
+  {q:'咳や息苦しさは？',a:'咳が出て、ややゼコゼコします。',key:true},
+  {q:'寒気と熱、どちらが強い？',a:'悪寒が強く、布団をかぶっても寒いです。',key:true},
+  {q:'普段の体力・既往は？',a:'頑健で、持病はありません。',key:true},
+  {q:'のどの渇きは？',a:'特に強くありません。',key:false},
+  {q:'発症からの時間は？',a:'今朝からで、当日です。',key:false}
+ ],
+ findings:[
+  ['望診','苦悶様で顔はやや紅潮。舌は淡紅、苔薄白。'],
+  ['舌診','淡紅・薄白苔。'+T('紅舌黄苔','裏に熱が盛んな所見。本例にはまだない。')+'はみられない。'],
+  ['聞診','咳あり、声に力はある。'],
+  ['脈診','脈は<b>'+T('浮',t.浮脈)+'・緊・有力</b>。'],
+  ['腹診','腹力は充実。虚証を示す所見はない。']
+ ],
+ tongue:{prompt:'高熱・無汗・強い体節痛・脈浮緊で有力。最も合致する病態は？',
+  options:[{t:'裏の実熱（'+T('陽明病',t.陽明病)+'）',correct:false},{t:'風寒が体表を強く閉じた'+T('表実','邪が盛んで体力も充実し、無汗で脈に力がある表証。')+'（強い閉表）',correct:true},{t:'自汗・脈浮弱の表虚',correct:false}],
+  ok:'<b>正解。</b> 高熱でも無汗、脈は浮で緊・有力。風寒が体表を強く閉じた表実です。強く発汗させて開きます。',
+  ng:'<b>もう一度。</b> 便秘・腹満の裏熱でも、自汗・脈弱の表虚でもない。無汗・脈浮緊有力は<b>表実</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'当日発症の急性外感。慢性の内傷（虚）の所見はない',
+   options:[{t:'血虚が主体',correct:false},{t:'明らかな虚はなく'+T('外感表証','外邪による体表の証。')+'が主体',correct:true},{t:'水滞が主体',correct:false}],
+   ok:'<b>正解。</b> 急性外感では病位と邪の性質をまず捉えます。気血水の虚は前景化していません。',
+   ng:'<b>再考を。</b> 当日発症で慢性の虚の所見はない。主軸は<b>外感表証</b>です。'},
+  {n:'② 八綱',hint:'無汗・悪寒（寒）／高熱・脈緊有力・体力充実（実）／急性で体表（表）',
+   options:[{t:T('表・実・寒','無汗・脈浮緊有力＝強い表実。')+'（強い風寒表実）',correct:true},{t:'裏・虚・寒',correct:false},{t:'表・虚・寒（自汗）',correct:false}],
+   ok:'<b>正解。</b> 無汗・脈浮緊有力・体力充実で<b>表・実・寒</b>。葛根湯証より閉表が強い極型です。',
+   ng:'<b>再考を。</b> 裏虚でも表虚でもない。無汗・脈浮緊有力は<b>表・実・寒</b>です。'},
+  {n:'③ 六病位',hint:'当日の悪寒・発熱・頭痛・脈浮 ＝ 邪は体表',
+   options:[{t:T('太陽病',t.太陽病)+'（表実証）',correct:true},{t:T('少陽病',t.少陽病),correct:false},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 悪寒・発熱・脈浮の発症初期は<b>太陽病</b>。なかでも無汗・喘・体節痛が強い表実の典型です。',
+   ng:'<b>再考を。</b> 往来寒熱（少陽）も裏実熱（陽明）もない。発症初期は<b>太陽病</b>です。'},
+  {n:'④ 五臓',hint:'体表の防御が閉じ、無汗・喘で肺の働き（宣発）が阻まれる',
+   options:[{t:T('脾',t.脾)+'の運化低下',correct:false},{t:T('肺','肺は呼吸と体表（皮毛）・水の上源を主り、発散（宣発）を担う。')+'衛に外邪、肺気の宣発が阻まれる',correct:true},{t:T('腎',t.腎)+'虚',correct:false}],
+   ok:'<b>正解。</b> 外邪が体表（肺衛）を閉じ、無汗・喘＝肺の宣発が妨げられた状態。発汗・宣肺で開きます。',
+   ng:'<b>再考を。</b> 脾や腎の慢性の虚ではない。体表（肺衛）の閉塞と肺気の宣発障害です。'}
+ ],
+ rxPrompt:'25歳・頑健・39℃・無汗・強い体節痛・咳・脈浮緊有力。太陽病の表実。最も適した1剤は？',
+ rx:[
+  {name:'麻黄湯',ok:true,html:'<b>正解 ― 麻黄湯。</b> 麻黄・桂枝・杏仁・甘草。強く発汗解表し、杏仁で肺気を降ろす。高熱・無汗・強い体節痛・脈浮緊有力（インフルエンザ初期など）に。発汗が得られたら速やかに中止します。'},
+  {name:'葛根湯',ok:false,html:'<b>次点。</b> 同じ表実でも項背のこわばりが前景で、体節痛・喘が軽いとき。本例は体節痛・喘が強く脈緊有力なので麻黄湯。'},
+  {name:'桂枝湯',ok:false,html:'<b>不適。</b> 自汗あり・脈浮弱の表虚に。本例は無汗・脈緊有力の表実です。'},
+  {name:'麻黄附子細辛湯',ok:false,html:'<b>不適。</b> 高齢・虚弱で悪寒主体・脈沈（少陰の感冒）に。本例は若く頑健・脈浮緊有力。'},
+  {name:'小柴胡湯',ok:false,html:'<b>不適。</b> こじれた少陽病に。発症当日の表実には早すぎます。'}
+ ],
+ summary:[
+  ['主な所見','39℃・無汗・強い悪寒／全身の体節痛・咳／脈浮緊有力・体力充実'],
+  ['① 気血水','明らかな虚はなく外感表証が主体'],['② 八綱','<b>表・実・寒</b>（強い表実）'],
+  ['③ 六病位','<b>太陽病（表実証）</b>'],['④ 五臓','肺衛の閉塞・肺気の宣発障害'],
+  ['方剤','<b>麻黄湯</b>：強く発汗解表＋宣肺。']
+ ],
+ diff:[
+  {name:'葛根湯',text:'項背のこわばりが前景の表実。'},
+  {name:'桂枝湯',text:'自汗・脈浮弱の表虚。'},
+  {name:'麻黄附子細辛湯',text:'高齢・虚弱・脈沈の少陰の感冒。'},
+  {name:'小柴胡湯',text:'こじれた少陽病。'}
+ ],
+ caution:'麻黄湯は<b>麻黄（多め）・桂枝・甘草</b>を含む。動悸・不眠・血圧上昇・排尿障害に注意し、循環器疾患・高齢・虚弱者では避けるか慎重に。発汗が得られたら中止する。'
+},
+
+{
+ id:'sbt', domain:'全身衰弱・めまい', rxName:'真武湯',
+ title:'冷え・倦怠・ふらつきと水様便', sub:'72歳男性。全身の冷えと倦怠、浮動性めまい、水様便',
+ patient:'72歳 男性。<br><b>主訴：</b>「体が冷えてだるく、立つとふらつく。軟便〜水様便で、足がむくむ」動くのもおっくうで横になりたがる。元気がない。',
+ learn:'<b>陽虚</b>（温める力の不足）に水のとどこおりが重なった、少陰の病態です。',
+ minKey:5,
+ questions:[
+  {q:'冷えはどう？温めると楽？',a:'全身、特に手足腰が冷えます。温めると楽です。',key:true},
+  {q:'だるさ・気力は？',a:'ぐったりして、横になっていたいです。',key:true},
+  {q:'めまい・ふらつきは？',a:'立つとふらつき、体が揺れる感じがします。',key:true},
+  {q:'お通じは？',a:'軟便〜水様で、消化されていない感じです。',key:true},
+  {q:'むくみ・尿は？',a:'足がむくみ、尿は少なめです。',key:true},
+  {q:'動悸は？',a:'ときどき動悸がします。',key:true},
+  {q:'のぼせ・口渇は？',a:'のぼせはなく、冷たい物は欲しくありません。',key:false},
+  {q:'食欲は？',a:'あまりありません。',key:false}
+ ],
+ findings:[
+  ['望診','顔色は蒼白で元気がない。舌は<b>淡白・胖大・湿潤</b>で歯痕、'+T('白滑苔','白く水っぽい苔。寒・水滞の所見。')+'。'],
+  ['舌診','淡白・胖大・湿潤・白滑苔。'],
+  ['聞診','声が弱く力がない。'],
+  ['脈診','脈は<b>'+T('沈',t.沈脈)+'・細・微弱</b>。'],
+  ['腹診','腹力は軟弱、腹部に冷感。心下振水音を触れることがある。']
+ ],
+ tongue:{prompt:'淡白・胖大・湿潤・白滑苔に全身の強い冷え。最も合致する病態は？',
+  options:[{t:'実熱（紅舌・黄苔）',correct:false},{t:T('陽虚','体を温める陽気の不足。冷え・倦怠・浮腫・水様便・脈沈微。')+'（腎脾の陽虚）＋'+T('水滞',t.水滞),correct:true},{t:T('陰虚',t.陰虚)+'（紅・乾燥）',correct:false}],
+  ok:'<b>正解。</b> 淡白・胖大・湿潤・白滑苔は陽虚＋水滞（陰寒内盛）。温める力が落ち、水をさばけず冷えとむくみが出ます。',
+  ng:'<b>もう一度。</b> 実熱は紅舌黄苔、陰虚は紅く乾燥。淡白・湿潤・白滑＋冷えは<b>陽虚＋水滞</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'冷え・倦怠・脈微（陽気の不足）／浮腫・水様便・めまい（水滞）',
+   options:[{t:'瘀血が主体',correct:false},{t:T('陽気（気）の不足','陽虚は気虚が進み、温める力まで落ちた状態。')+'を背景とした'+T('水滞',t.水滞),correct:true},{t:'実熱が主体',correct:false}],
+   ok:'<b>正解。</b> 温める陽気が不足し（陽虚）、水をさばけずに停滞（水滞）。冷え・倦怠と浮腫・水様便・めまいが同時に出ます。',
+   ng:'<b>再考を。</b> 瘀血や実熱の所見はない。陽気の不足を背景とした<b>水滞</b>です。'},
+  {n:'② 八綱',hint:'全身の強い冷え（寒）／著明な倦怠・脈沈微弱（虚）／慢性・体内（裏）',
+   options:[{t:'表・実・寒',correct:false},{t:T('裏・虚・寒','陽虚で全身が冷え、正気が著しく衰えた陰証。')+'が著明（陰証）',correct:true},{t:'裏・実・熱',correct:false}],
+   ok:'<b>正解。</b> 強い冷え（寒）・著明な倦怠と脈沈微弱（虚）・慢性（裏）で<b>裏・虚・寒（陰証）</b>が著明です。',
+   ng:'<b>再考を。</b> 表証でも裏実熱でもない。冷え・倦怠・脈沈微は<b>裏・虚・寒</b>です。'},
+  {n:'③ 六病位',hint:'全身の衰弱と強い冷え・脈沈微弱',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:T('少陰病','三陰の深い段階。全身衰弱と冷え、脈沈微、横になりたがる。')+'（全身衰弱と冷え）',correct:true},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 全身の衰弱・強い冷え・脈沈微弱・横になりたがる状態は<b>少陰病</b>に位置づきます。',
+   ng:'<b>再考を。</b> 太陽病は急性表証、陽明病は裏実熱。全身衰弱と冷え・脈沈微は<b>少陰病</b>です。'},
+  {n:'④ 五臓',hint:'温煦・水の気化の低下＝冷え・浮腫・水様便（と消化の弱り）',
+   options:[{t:T('肝',t.肝)+'の高ぶり',correct:false},{t:T('腎',t.腎)+'（と'+T('脾',t.脾)+'）の'+T('陽虚','温煦と気化を担う陽気の不足。')+'＝温煦・気化の低下',correct:true},{t:T('肺',t.肺)+'の宣発失調',correct:false}],
+   ok:'<b>正解。</b> 体を温め水をさばく腎陽（と脾陽）が衰えた状態。だから温陽＋利水の方剤を選びます。',
+   ng:'<b>再考を。</b> 肝の高ぶりや肺の外感ではない。中心は<b>腎（と脾）の陽虚</b>です。'}
+ ],
+ rxPrompt:'診断は「腎脾の陽虚＋水滞・少陰の虚寒」。冷え・倦怠・めまい・水様便・浮腫・脈沈微弱。最も適した1剤は？',
+ rx:[
+  {name:'真武湯',ok:true,html:'<b>正解 ― 真武湯。</b> 附子で温陽、茯苓・白朮・生姜で利水、芍薬。腎脾の陽虚＋水滞（冷え・倦怠・浮動性めまい・水様便・浮腫、脈沈微）に。'},
+  {name:'五苓散',ok:false,html:'<b>不適。</b> 口渇＋尿量減少＋嘔吐下痢/浮腫の水滞だが、陽虚の強い冷え・脈沈微が乏しい比較的体力ある人に。'},
+  {name:'補中益気湯',ok:false,html:'<b>不適。</b> 気虚・気の下垂が主体で、著明な冷え・水様便・脈沈微は前景でない。'},
+  {name:'人参湯',ok:false,html:'<b>次点。</b> 脾の陽虚（胃部の冷え・嘔吐下痢）が主体のとき。本例はめまい・浮腫・脈沈微で腎陽虚・水滞が前景なので真武湯。'},
+  {name:'苓桂朮甘湯',ok:false,html:'<b>不適。</b> 立ちくらみ・動悸・水滞だが、著明な冷え・脈沈微弱の陽虚に乏しい比較的体力中等度の人に。'}
+ ],
+ summary:[
+  ['主な所見','全身の冷え・著明な倦怠・横になりたがる／浮動性めまい・水様便・浮腫・乏尿／舌淡白胖大湿潤・脈沈微弱'],
+  ['① 気血水','<b>陽虚を背景とした水滞</b>'],['② 八綱','<b>裏・虚・寒</b>が著明（陰証）'],
+  ['③ 六病位','<b>少陰病</b>'],['④ 五臓','<b>腎（と脾）の陽虚</b>＝温煦・気化の低下'],
+  ['方剤','<b>真武湯</b>：温陽＋利水。']
+ ],
+ diff:[
+  {name:'五苓散',text:'陽虚の乏しい急性の水滞（口渇・乏尿）。'},
+  {name:'人参湯',text:'脾の陽虚（胃部の冷え・嘔吐下痢）主体。'},
+  {name:'苓桂朮甘湯',text:'立ちくらみ・動悸・水滞だが陽虚は軽い。'},
+  {name:'補中益気湯',text:'気虚・気の下垂が主体。'}
+ ],
+ caution:'真武湯は<b>附子</b>を含む。動悸・のぼせ・舌や口のしびれなどのアコニチン中毒症状に注意し、増量は慎重に。'
+},
+
+{
+ id:'hst', domain:'消化器（胃腸）', rxName:'半夏瀉心湯',
+ title:'みぞおちのつかえと下痢', sub:'45歳男性。心窩部のつかえ・悪心・腹鳴下痢・口の苦み',
+ patient:'45歳 男性。<br><b>主訴：</b>「みぞおちがつかえて悪心・げっぷ、お腹がゴロゴロ鳴って軟便〜下痢。口の中が苦く粘る」ストレスや暴飲暴食で悪化、食欲低下。',
+ learn:'温める所見と熱の所見が入り混じる<b>寒熱錯雑</b>の心下痞。瀉心湯類の典型です。',
+ minKey:5,
+ questions:[
+  {q:'みぞおちの様子は？',a:'つかえて張りますが、強い痛みはありません。',key:true},
+  {q:'悪心・げっぷは？',a:'吐き気とげっぷがあります。',key:true},
+  {q:'お通じ・腹鳴は？',a:'軟便〜下痢で、お腹がゴロゴロ鳴ります。',key:true},
+  {q:'口の中の感じは？',a:'苦く、粘る感じがあります。',key:true},
+  {q:'食欲は？',a:'低下しています。',key:true},
+  {q:'悪化の誘因は？',a:'ストレスや食べすぎ・飲みすぎで悪くなります。',key:true},
+  {q:'全身の強い冷えは？',a:'全身が冷え切る感じは目立ちません。',key:false},
+  {q:'発熱は？',a:'発熱はありません。',key:false}
+ ],
+ findings:[
+  ['望診','舌はやや紅、苔は中央が'+T('黄白膩','黄色みを帯びたややべったりした苔。湿熱や寒熱錯雑の所見。')+'。'],
+  ['舌診','やや紅・中央に黄白のやや膩な苔。'],
+  ['聞診','げっぷと腹鳴が聞かれる。'],
+  ['脈診','脈は滑〜やや数。'],
+  ['腹診','腹力は中等度。'+T('心下痞硬',t.心下痞硬)+'（つかえと抵抗）、腹鳴。']
+ ],
+ tongue:{prompt:'心下痞硬＋悪心・下痢＋口苦・黄白膩苔。最も合致する病態は？',
+  options:[{t:'脾の純然たる陽虚（淡白・湿潤）',correct:false},{t:T('寒熱錯雑','温める所見（下痢・悪心）と熱の所見（口苦・黄苔）が併存。')+'（中焦の昇降失調＝痞）',correct:true},{t:'血虚が主体',correct:false}],
+  ok:'<b>正解。</b> つかえ（痞）に、下痢・悪心（寒）と口苦・黄苔（熱）が混在。中焦の気の昇降が乱れた寒熱錯雑です。',
+  ng:'<b>もう一度。</b> 純然たる陽虚なら淡白・湿潤で口苦は出にくい。本例は<b>寒熱錯雑の心下痞</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'みぞおちのつかえ（気の昇降の乱れ）／腹鳴・軟便・やや膩の苔（湿）',
+   options:[{t:'血虚が主体',correct:false},{t:T('気機の失調','気の昇り降りの乱れ。中焦でつかえ（痞）として現れる。')+'（中焦の痞）＋湿',correct:true},{t:'瘀血が主体',correct:false}],
+   ok:'<b>正解。</b> 中焦で気の昇降が乱れて痞となり、湿（やや膩苔・腹鳴・下痢）を伴います。',
+   ng:'<b>再考を。</b> 血虚や瘀血の所見は前景でない。中心は<b>気機の失調（中焦の痞）＋湿</b>です。'},
+  {n:'② 八綱',hint:'下痢・悪心（寒）と口苦・黄苔（熱）が併存／虚も実も混じる',
+   options:[{t:'純然たる表・実・寒',correct:false},{t:T('寒熱錯雑・虚実挟雑','寒と熱、虚と実が混在する中間的な状態。')+'（中間証）',correct:true},{t:'純然たる裏・虚・寒',correct:false}],
+   ok:'<b>正解。</b> 寒と熱、虚と実が入り混じる中間証。だから温と清を同時に用いる瀉心湯が合います。',
+   ng:'<b>再考を。</b> 一方に振り切れていません。寒熱・虚実が混在する<b>中間証</b>です。'},
+  {n:'③ 六病位',hint:'往来寒熱はないが、表でも裏の実熱でもない心下の痞（半表半裏に関連）',
+   options:[{t:T('太陽病',t.太陽病)+'（表証）',correct:false},{t:T('少陽病',t.少陽病)+'に関連する心下の痞（半表半裏）',correct:true},{t:T('太陰病',t.太陰病)+'の純然たる虚寒',correct:false}],
+   ok:'<b>正解。</b> 瀉心湯類は、少陽病の心下に痞を生じた寒熱錯雑の病態（半表半裏に関連）として捉えられます。',
+   ng:'<b>再考を。</b> 表証でも純然たる太陰の虚寒でもない。<b>半表半裏（少陽）に関連する心下の痞</b>です。'},
+  {n:'④ 五臓',hint:'つかえ・悪心・下痢・腹鳴 ＝ 中焦で昇るべき気が昇らず降りるべき気が降りない',
+   options:[{t:T('肺',t.肺)+'の宣発失調',correct:false},{t:T('脾','脾は昇清、胃は降濁。両者の調和が崩れると痞・悪心・下痢に。')+'胃（中焦）の昇降失調',correct:true},{t:T('腎',t.腎)+'虚',correct:false}],
+   ok:'<b>正解。</b> 脾の昇清と胃の降濁の調和が崩れた状態。半夏・乾姜で降ろし、黄芩・黄連で清し、人参で中を補います。',
+   ng:'<b>再考を。</b> 肺や腎ではない。中心は<b>脾胃（中焦）の昇降失調</b>です。'}
+ ],
+ rxPrompt:'診断は「寒熱錯雑の心下痞・脾胃の昇降失調」。つかえ・悪心・腹鳴下痢・口苦。最も適した1剤は？',
+ rx:[
+  {name:'半夏瀉心湯',ok:true,html:'<b>正解 ― 半夏瀉心湯。</b> 半夏・乾姜の温と黄芩・黄連の清を合わせ（辛開苦降）、人参・大棗・甘草で中を補う。寒熱錯雑の心下痞・悪心・腹鳴下痢に。'},
+  {name:'六君子湯',ok:false,html:'<b>不適。</b> 脾気虚＋水滞で冷え・もたれが主体、口苦・黄苔の熱所見が乏しいとき。'},
+  {name:'五苓散',ok:false,html:'<b>不適。</b> 口渇＋尿量減少＋水様下痢/嘔吐の水滞に。心下痞・口苦の寒熱錯雑とは別です。'},
+  {name:'大建中湯',ok:false,html:'<b>不適。</b> 腹部の強い冷え・腹満・蠕動不穏に。心窩部の痞・口苦の本例とは病態が異なります。'},
+  {name:'黄連解毒湯',ok:false,html:'<b>不適。</b> 実熱（のぼせ・顔面紅潮・出血傾向）主体に。下痢・痞・虚の要素を伴う本例とは異なります。'}
+ ],
+ summary:[
+  ['主な所見','心窩部のつかえ・悪心げっぷ／腹鳴・軟便下痢・口の苦み／舌やや紅・黄白膩苔・心下痞硬'],
+  ['① 気血水','<b>気機の失調（中焦の痞）＋湿</b>'],['② 八綱','<b>寒熱錯雑・虚実挟雑</b>（中間証）'],
+  ['③ 六病位','少陽に関連する心下の痞（半表半裏）'],['④ 五臓','<b>脾胃（中焦）の昇降失調</b>'],
+  ['方剤','<b>半夏瀉心湯</b>：辛開苦降＋補中。']
+ ],
+ diff:[
+  {name:'六君子湯',text:'脾気虚＋水滞・もたれ主体、熱所見なし。'},
+  {name:'五苓散',text:'口渇＋乏尿＋水様下痢の水滞。'},
+  {name:'大建中湯',text:'腹部の強い冷え・腹満・蠕動不穏。'},
+  {name:'黄連解毒湯',text:'実熱主体（のぼせ・紅潮・出血傾向）。'}
+ ],
+ caution:'半夏瀉心湯は<b>甘草</b>を含む（偽アルドステロン症に注意）。黄芩による肝障害・間質性肺炎はまれだが念頭に。'
+},
+
+{
+ id:'grs', domain:'急性胃腸炎・水滞', rxName:'五苓散',
+ title:'嘔吐下痢と口渇・乏尿', sub:'30歳女性。水様嘔吐下痢、口渇、水を飲むと吐く、尿が出ない',
+ patient:'30歳 女性。胃腸炎流行期。<br><b>主訴：</b>「昨日からの嘔吐と水様下痢。喉が渇いて水を飲むがすぐ吐く。尿がほとんど出ず、頭が痛い」',
+ learn:'体の中で水が偏在した<b>急性の水滞</b>。「口渇＝うるおい不足」とは限らない好例です。',
+ minKey:5,
+ questions:[
+  {q:'口の渇きは？',a:'強く、水が欲しくなります。',key:true},
+  {q:'水を飲むとどうなる？',a:'飲むとすぐ吐いてしまいます。',key:true},
+  {q:'尿は出ている？',a:'ほとんど出ず、量がとても少ないです。',key:true},
+  {q:'便や嘔吐の様子は？',a:'水様の下痢と嘔吐です。',key:true},
+  {q:'頭痛・めまいは？',a:'ズキズキする頭痛とふらつきがあります。',key:true},
+  {q:'むくみは？',a:'顔や手がむくむ感じがあります。',key:true},
+  {q:'強い冷え・倦怠は？',a:'ぐったりするほどの冷えや衰弱は目立ちません。',key:false},
+  {q:'発熱は？',a:'高熱はありません。',key:false}
+ ],
+ findings:[
+  ['望診','舌は淡紅〜やや胖大、苔は白く湿潤。'],
+  ['舌診','淡紅・やや胖大・白湿苔。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は浮〜やや数。'],
+  ['腹診','腹力は中等度、'+T('心下振水音',t.心下振水音)+'を触れる。']
+ ],
+ tongue:{prompt:'口渇するのに尿が出ず、水を飲むと吐き、水様便。最も合致する病態は？',
+  options:[{t:T('陰虚',t.陰虚)+'（うるおいの不足）',correct:false},{t:T('水滞','水分が体内で偏在し、気化・分布がうまくいかない状態。')+'（水の偏在・気化障害）',correct:true},{t:'裏実熱の便秘',correct:false}],
+  ok:'<b>正解。</b> 口渇は水分の偏在（うまくめぐらない）ためで、津液そのものの不足ではありません。乏尿・水逆・水様便とあわせ典型的な水滞です。',
+  ng:'<b>もう一度。</b> 陰虚なら乾燥・少苔、裏実熱なら便秘・黄苔。口渇＋乏尿＋水逆＋水様便は<b>水の偏在＝水滞</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'口渇するのに乏尿・水逆・水様便・浮腫感',
+   options:[{t:'血虚が主体',correct:false},{t:T('水滞',t.水滞)+'（水の偏在・気化の障害）が主体',correct:true},{t:'気虚が主体',correct:false}],
+   ok:'<b>正解。</b> 水が体内で偏り、めぐらない状態。利水で水を順らせるのが治療です。',
+   ng:'<b>再考を。</b> 血虚や慢性の気虚ではない。急性で前景なのは<b>水滞</b>です。'},
+  {n:'② 八綱',hint:'急性・体内（裏）／寒熱や虚実に大きく偏らず、水のかたよりが主',
+   options:[{t:T('裏の水滞','寒熱・虚実に大きく偏らず、水の停滞・偏在が主体の状態。')+'（寒熱・虚実に大きく偏らない）',correct:true},{t:'裏・虚・寒（陽虚）',correct:false},{t:'表・実・寒',correct:false}],
+   ok:'<b>正解。</b> 著明な冷え・衰弱（陽虚）も表証も前景でなく、水の偏在が主体。だから利水剤の五苓散が合います。',
+   ng:'<b>再考を。</b> 強い冷え・脈沈微の陽虚でも表寒でもない。主体は<b>裏の水滞</b>です。'},
+  {n:'③ 六病位',hint:'頭痛や脈浮など表の名残に、膀胱の気化失調（蓄水）が加わる',
+   options:[{t:T('太陽病の腑証（蓄水）','太陽病で膀胱の気化がうまくいかず水がたまる病態。五苓散の古典的適応。')+'＝表に伴う水の気化失調',correct:true},{t:T('少陰病',t.少陰病)+'の純然たる虚寒',correct:false},{t:T('陽明病',t.陽明病)+'の裏実熱',correct:false}],
+   ok:'<b>正解。</b> 五苓散証は古典的に「太陽蓄水」＝膀胱の気化失調。頭痛・脈浮など表の名残を伴うのが特徴です。',
+   ng:'<b>再考を。</b> 少陰の虚寒でも陽明の裏実熱でもない。<b>太陽病の腑証（蓄水）</b>です。'},
+  {n:'④ 五臓',hint:'尿が作られず水がさばけない＝水液の代謝・気化を担う臓腑',
+   options:[{t:T('肝',t.肝)+'の高ぶり',correct:false},{t:T('膀胱','腎の気化を受けて尿を排泄する。気化が失われると蓄水・乏尿に。')+'（腎）と'+T('脾',t.脾)+'の水液代謝の失調',correct:true},{t:T('心',t.心)+'の血脈の失調',correct:false}],
+   ok:'<b>正解。</b> 膀胱（腎の気化）と脾の水のさばきが乱れた状態。気化を助けて水を順らせます。',
+   ng:'<b>再考を。</b> 肝や心ではない。水液の代謝・気化を担う<b>膀胱（腎）・脾</b>の失調です。'}
+ ],
+ rxPrompt:'診断は「急性の水滞・太陽蓄水」。口渇＋乏尿＋水様嘔吐下痢・水逆・頭痛。最も適した1剤は？',
+ rx:[
+  {name:'五苓散',ok:true,html:'<b>正解 ― 五苓散。</b> 沢瀉・茯苓・猪苓・白朮・桂枝。気化を助け水を順らせる（利水）。口渇＋乏尿＋水様嘔吐下痢・水逆・頭痛に即効。二日酔い・浮腫・乗り物酔いにも。'},
+  {name:'真武湯',ok:false,html:'<b>不適。</b> 著明な冷え・脈沈微・倦怠（陽虚）を伴う水滞に。本例は急性で陽虚は前景でない。'},
+  {name:'半夏瀉心湯',ok:false,html:'<b>不適。</b> 心下痞・口苦の寒熱錯雑の下痢に。本例は口渇・乏尿・水逆の水滞が主です。'},
+  {name:'補中益気湯',ok:false,html:'<b>不適。</b> 慢性の気虚に。急性の水滞には合いません。'},
+  {name:'平胃散',ok:false,html:'<b>不適。</b> 食滞・湿による腹満・もたれに。典型的な水逆・乏尿・口渇は五苓散がより適します。'}
+ ],
+ summary:[
+  ['主な所見','口渇するのに乏尿／水を飲むと吐く（水逆）・水様嘔吐下痢／頭痛・むくみ・心下振水音'],
+  ['① 気血水','<b>水滞（水の偏在・気化障害）</b>'],['② 八綱','<b>裏の水滞</b>（寒熱・虚実に大きく偏らない）'],
+  ['③ 六病位','<b>太陽病の腑証（蓄水）</b>'],['④ 五臓','<b>膀胱（腎）・脾</b>の水液代謝の失調'],
+  ['方剤','<b>五苓散</b>：気化を助け利水。']
+ ],
+ diff:[
+  {name:'真武湯',text:'陽虚（冷え・脈沈微・倦怠）を伴う水滞。'},
+  {name:'半夏瀉心湯',text:'心下痞・口苦の寒熱錯雑の下痢。'},
+  {name:'平胃散',text:'食滞・湿による腹満・もたれ。'},
+  {name:'補中益気湯',text:'慢性の気虚。'}
+ ],
+ caution:'五苓散は比較的安全。感染性腸炎では脱水への補液など原因への対応を優先し、補助的に併用する。'
+},
+
+{
+ id:'hcet', domain:'気虚・虚弱', rxName:'補中益気湯',
+ title:'倦怠・食欲不振・易感冒', sub:'60歳女性。全身倦怠・気力低下・易感冒・内臓下垂感',
+ patient:'60歳 女性。<br><b>主訴：</b>「全身がだるく気力が出ない。食欲がなく、すぐ風邪をひいて治りにくい。午前中がつらく、話すのも億劫。お腹が下がる感じがある」',
+ learn:'気の不足と<b>気の下垂（中気下陥）</b>が前面に出た、気虚の代表例です。',
+ minKey:5,
+ questions:[
+  {q:'だるさ・気力は？',a:'ぐったりして、やる気が出ません。特に午前がつらいです。',key:true},
+  {q:'食欲は？',a:'なく、食べても力が出ません。',key:true},
+  {q:'風邪のひきやすさは？',a:'ひきやすく、治りにくいです。',key:true},
+  {q:'汗は？',a:'少し動くと汗が出ます（自汗）。',key:true},
+  {q:'下がる感じ（下垂感）は？',a:'お腹が下がる感じで、立っているとつらいです。',key:true},
+  {q:'声・話すのは？',a:'声に力がなく、話すのも億劫です。',key:true},
+  {q:'強い冷え・水様便は？',a:'著明な水様便やむくみはありません。',key:false},
+  {q:'のぼせ・口苦は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','顔色はつやがなく、舌は淡・薄白苔。'],
+  ['舌診','淡・薄白苔。'],
+  ['聞診','声は小さく力がない。'],
+  ['脈診','脈は<b>沈・弱</b>（大きいが力のないことも）。'],
+  ['腹診','腹力は軟弱、心窩部に力がなく、腹部大動脈の拍動を触れることがある。']
+ ],
+ tongue:{prompt:'倦怠・自汗・易感冒・下垂感・舌淡薄苔。最も合致する病態は？',
+  options:[{t:'実熱（紅舌・黄苔）',correct:false},{t:T('気虚',t.気虚)+'（脾肺の気虚）と'+T('中気下陥','脾の気が不足し持ち上げる力が落ちて内臓が下垂する状態。')+'',correct:true},{t:'血虚が単独で主体',correct:false}],
+  ok:'<b>正解。</b> 倦怠・自汗・易感冒・声力低下は気虚、下垂感は中気下陥。気を補い持ち上げる（昇提）治療になります。',
+  ng:'<b>もう一度。</b> 実熱でも血虚単独でもない。倦怠・自汗・下垂は<b>気虚＋中気下陥</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'倦怠・自汗・声力低下・易感冒／下垂感',
+   options:[{t:'水滞が主体',correct:false},{t:T('気虚',t.気虚)+'が主体（中気下陥）',correct:true},{t:'瘀血が主体',correct:false}],
+   ok:'<b>正解。</b> 全身の気の不足が主体で、持ち上げる力まで落ちた中気下陥を伴います。',
+   ng:'<b>再考を。</b> 水滞や瘀血ではない。中心は<b>気虚（中気下陥）</b>です。'},
+  {n:'② 八綱',hint:'著明な倦怠・自汗・脈弱（虚）／慢性・体内（裏）／強い冷えは軽い',
+   options:[{t:'表・実・熱',correct:false},{t:T('裏・虚','慢性・体内で正気（気）が不足した状態。寒への偏りは軽い。')+'（気虚中心、寒は軽度）',correct:true},{t:'裏・実・熱',correct:false}],
+   ok:'<b>正解。</b> 慢性（裏）で正気が不足（虚）。著明な冷えや実熱はなく、虚が前面です。',
+   ng:'<b>再考を。</b> 表実でも裏実熱でもない。倦怠・自汗・脈弱は<b>裏・虚（気虚中心）</b>です。'},
+  {n:'③ 六病位',hint:'外感（かぜ）の病期ではなく、慢性の虚労',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（気虚）で捉える',correct:true},{t:T('少陽病',t.少陽病),correct:false}],
+   ok:'<b>正解。</b> 易感冒はあっても今は外感の病期ではなく、慢性の気虚（内傷）として捉えます。',
+   ng:'<b>再考を。</b> 太陽病や少陽病の急性病期ではない。慢性の<b>内傷（気虚）</b>です。'},
+  {n:'④ 五臓',hint:'食欲不振・倦怠（運化の弱り）＋易感冒・自汗（体表の防御の弱り）',
+   options:[{t:T('肝',t.肝)+'の高ぶり',correct:false},{t:T('脾','脾は気血生化の源。脾気虚で倦怠・食欲不振・下垂。')+'（と'+T('肺','肺気は衛気をめぐらせ体表を守る。肺気虚で易感冒・自汗。')+'）の気虚＝中気下陥',correct:true},{t:T('腎',t.腎)+'虚が単独で主体',correct:false}],
+   ok:'<b>正解。</b> 脾（気血生化の源）と肺（体表の防御）の気虚が中心。昇提薬（升麻・柴胡）で気を持ち上げます。',
+   ng:'<b>再考を。</b> 肝の高ぶりや腎虚単独ではない。中心は<b>脾（と肺）の気虚＝中気下陥</b>です。'}
+ ],
+ rxPrompt:'診断は「脾肺の気虚・中気下陥」。倦怠・食欲不振・易感冒・自汗・内臓下垂感。最も適した1剤は？',
+ rx:[
+  {name:'補中益気湯',ok:true,html:'<b>正解 ― 補中益気湯。</b> 黄耆・人参・白朮・甘草で補気健脾、升麻・柴胡で気を持ち上げ（昇提）、当帰・陳皮を配す。気虚・中気下陥（倦怠・食欲不振・易感冒・内臓下垂・脱肛）に。「医王湯」とも。'},
+  {name:'六君子湯',ok:false,html:'<b>不適。</b> 同じ脾気虚でも、もたれ・心下振水音など胃の停滞（水滞）が前景のとき。下垂・易感冒で昇提が要る本例は補中益気湯。'},
+  {name:'十全大補湯',ok:false,html:'<b>次点。</b> 気虚＋血虚（貧血・るい痩・術後）で気血双補が要るとき。本例は下垂・易感冒の気虚が前景です。'},
+  {name:'真武湯',ok:false,html:'<b>不適。</b> 陽虚＋水滞（冷え・水様便・浮腫・脈沈微）に。本例の主体は気虚・下垂です。'},
+  {name:'小柴胡湯',ok:false,html:'<b>不適。</b> 少陽病の往来寒熱・胸脇苦満に。慢性の気虚には合いません。'}
+ ],
+ summary:[
+  ['主な所見','著明な倦怠・気力低下・午前増悪／食欲不振・易感冒・自汗／内臓下垂感・声力低下・脈弱'],
+  ['① 気血水','<b>気虚（中気下陥）</b>'],['② 八綱','<b>裏・虚</b>（気虚中心、寒は軽度）'],
+  ['③ 六病位','外感ではなく内傷（気虚）'],['④ 五臓','<b>脾（と肺）の気虚＝中気下陥</b>'],
+  ['方剤','<b>補中益気湯</b>：補気健脾＋昇提。']
+ ],
+ diff:[
+  {name:'六君子湯',text:'脾気虚＋水滞・もたれが前景。'},
+  {name:'十全大補湯',text:'気血両虚（貧血・るい痩・術後）。'},
+  {name:'真武湯',text:'陽虚＋水滞（冷え・水様便・浮腫）。'},
+  {name:'小柴胡湯',text:'少陽病（往来寒熱・胸脇苦満）。'}
+ ],
+ caution:'補中益気湯は<b>甘草</b>を含む（偽アルドステロン症に注意）。'
+},
+
+{
+ id:'jdt', domain:'気血両虚・消耗', rxName:'十全大補湯',
+ title:'術後・治療後の消耗', sub:'65歳女性。手術/化学療法後の疲労・貧血様・冷え・皮膚乾燥',
+ patient:'65歳 女性。手術および化学療法後。<br><b>主訴：</b>「治療のあとから疲れがとれず、顔色が悪く立ちくらみがする。手足が冷え、肌が乾いて抜け毛も増えた。食欲がなく痩せた」少し動くと息切れ。',
+ learn:'気も血も不足した<b>気血両虚</b>。気血双補（補気＋補血）の代表方剤を学びます。',
+ minKey:5,
+ questions:[
+  {q:'だるさ・息切れは？',a:'少し動くと息切れし、ぐったりします。',key:true},
+  {q:'顔色・立ちくらみは？',a:'顔色が悪く、立ちくらみがあります。',key:true},
+  {q:'冷えは？',a:'手足が冷えます。',key:true},
+  {q:'皮膚や髪は？',a:'肌が乾燥し、抜け毛が増えました。',key:true},
+  {q:'食欲・体重は？',a:'食欲がなく、痩せました。',key:true},
+  {q:'経過は？',a:'手術と抗がん剤治療のあとからです。',key:true},
+  {q:'のぼせ・口苦は？',a:'ありません。',key:false},
+  {q:'強い腹満・便秘は？',a:'目立ちません。',key:false}
+ ],
+ findings:[
+  ['望診','顔色は蒼白でつやがなく、舌は淡白・薄白苔でやや乾燥。'],
+  ['舌診','淡白・薄白苔・やや乾燥。'],
+  ['聞診','声は弱く、息切れぎみ。'],
+  ['脈診','脈は<b>沈・細・弱</b>。'],
+  ['腹診','腹力は軟弱、全体に力がない。']
+ ],
+ tongue:{prompt:'淡白でやや乾き、全身が消耗。最も合致する病態は？',
+  options:[{t:'実熱（紅舌・黄苔）',correct:false},{t:T('気虚',t.気虚)+'＋'+T('血虚',t.血虚)+'（気血両虚）',correct:true},{t:'水滞が主体',correct:false}],
+  ok:'<b>正解。</b> 倦怠・息切れ（気虚）に、顔色不良・立ちくらみ・皮膚乾燥・脱毛（血虚）が重なる気血両虚です。',
+  ng:'<b>もう一度。</b> 実熱でも水滞でもない。倦怠＋貧血様＋乾燥は<b>気血両虚</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'倦怠・息切れ・脈弱（気虚）／顔色不良・立ちくらみ・皮膚乾燥・脱毛（血虚）',
+   options:[{t:'水滞が主体',correct:false},{t:T('気虚',t.気虚)+'＋'+T('血虚',t.血虚)+'（気血両虚）が主体',correct:true},{t:'瘀血が主体',correct:false}],
+   ok:'<b>正解。</b> 気と血の両方が不足した気血両虚。気血を同時に補う必要があります。',
+   ng:'<b>再考を。</b> 水滞や瘀血ではない。中心は<b>気血両虚</b>です。'},
+  {n:'② 八綱',hint:'著明な虚／冷えを伴う／慢性・体内（裏）',
+   options:[{t:'表・実・熱',correct:false},{t:T('裏・虚・寒','全身の気血が不足し（虚）、冷えを伴う（寒）慢性の陰証。')+'（虚が著明な陰証）',correct:true},{t:'裏・実・熱',correct:false}],
+   ok:'<b>正解。</b> 慢性（裏）で全身が不足（虚）し冷えを伴う（寒）。虚が著明な陰証です。',
+   ng:'<b>再考を。</b> 実熱や表証ではない。全身消耗・冷えは<b>裏・虚・寒</b>です。'},
+  {n:'③ 六病位',hint:'外感の病期ではなく、慢性の虚労（消耗）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（気血両虚）で捉える',correct:true},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 術後・治療後の消耗は慢性の虚労。内傷（気血両虚）として捉えます。',
+   ng:'<b>再考を。</b> 急性熱性疾患の病期ではない。慢性の<b>内傷（気血両虚）</b>です。'},
+  {n:'④ 五臓',hint:'気血を生む源の弱り＋全身を養えない（顔色・皮膚・髪）',
+   options:[{t:T('肺',t.肺)+'の宣発失調が単独で主体',correct:false},{t:T('脾','脾は気血生化の源。脾の弱りで気血が不足し全身を養えない。')+'（気血生化の源、腎も）の虚を背景に全身の気血が不足',correct:true},{t:T('肝',t.肝)+'の高ぶりが主体',correct:false}],
+   ok:'<b>正解。</b> 気血を生む脾（と腎）の弱りを基盤に、全身の気血が不足。脾胃を補って気血を生じさせます。',
+   ng:'<b>再考を。</b> 肺単独や肝の高ぶりではない。気血生化の源＝<b>脾（と腎）</b>を中心とした気血不足です。'}
+ ],
+ rxPrompt:'診断は「気血両虚・全身の消耗」。倦怠・貧血様・冷え・皮膚乾燥・脱毛・るい痩。最も適した1剤は？',
+ rx:[
+  {name:'十全大補湯',ok:true,html:'<b>正解 ― 十全大補湯。</b> 四君子湯＋四物湯（気血双補）に黄耆・桂枝を加える。気血両虚の全身消耗（術後・化学療法後・貧血・冷え・皮膚乾燥）に。'},
+  {name:'補中益気湯',ok:false,html:'<b>不適。</b> 気虚・中気下陥（易感冒・下垂）が主体で、明らかな血虚（貧血・皮膚乾燥）が乏しいとき。'},
+  {name:'人参養栄湯',ok:false,html:'<b>次点。</b> 気血両虚に加え、咳・息切れ（肺）や不眠・健忘・不安（心神）が目立つとき。本例は皮膚乾燥・冷えが前景なので十全大補湯。'},
+  {name:'当帰芍薬散',ok:false,html:'<b>不適。</b> 血虚＋水滞・浮腫の婦人に。全身の気虚・消耗が前景の本例は気血双補が必要です。'},
+  {name:'加味帰脾湯',ok:false,html:'<b>不適。</b> 心脾両虚＋不安・不眠・出血傾向に。本例は術後消耗・冷えが主体です。'}
+ ],
+ summary:[
+  ['主な所見','倦怠・息切れ（気虚）／顔色不良・立ちくらみ・皮膚乾燥・脱毛（血虚）／冷え・るい痩・舌淡白・脈沈細弱'],
+  ['① 気血水','<b>気血両虚</b>'],['② 八綱','<b>裏・虚・寒</b>（虚が著明な陰証）'],
+  ['③ 六病位','内傷（気血両虚）の虚労'],['④ 五臓','<b>脾（気血生化の源、腎も）</b>を基盤とした気血不足'],
+  ['方剤','<b>十全大補湯</b>：気血双補。']
+ ],
+ diff:[
+  {name:'補中益気湯',text:'気虚・中気下陥（易感冒・下垂）が主体。'},
+  {name:'人参養栄湯',text:'気血両虚＋呼吸器・精神症状が目立つ。'},
+  {name:'当帰芍薬散',text:'血虚＋水滞・浮腫の婦人。'},
+  {name:'加味帰脾湯',text:'心脾両虚＋不安・不眠・出血傾向。'}
+ ],
+ caution:'十全大補湯は地黄・当帰を含み、胃もたれ・下痢が出ることがある。多くの製剤に<b>甘草</b>を含む。'
+},
+
+{
+ id:'nyt', domain:'気血両虚・呼吸器/精神', rxName:'人参養栄湯',
+ title:'慢性消耗に咳・不眠・健忘', sub:'70歳男性。慢性疲労・やせに、咳・息切れ・不眠・物忘れ・不安',
+ patient:'70歳 男性。慢性肺疾患で通院。<br><b>主訴：</b>「だるくて食欲がなく痩せてきた。乾いた咳と息切れがあり、寝つけず物忘れも増え、気分が沈む」顔色が悪く立ちくらみ。',
+ learn:'気血両虚に加え、<b>肺（咳・息切れ）と心神（不眠・健忘・不安）</b>の症状を伴うフレイル型です。',
+ minKey:5,
+ questions:[
+  {q:'だるさ・体重は？',a:'ぐったりして、痩せてきました。',key:true},
+  {q:'顔色・立ちくらみは？',a:'顔色が悪く、立ちくらみがあります。',key:true},
+  {q:'咳・息切れは？',a:'乾いた咳と息切れがあります。',key:true},
+  {q:'睡眠・物忘れは？',a:'寝つけず、物忘れが増えました。',key:true},
+  {q:'気分は？',a:'沈みがちで不安です。',key:true},
+  {q:'食欲は？',a:'ありません。',key:true},
+  {q:'のぼせ・実熱は？',a:'ありません。',key:false},
+  {q:'強い腹満は？',a:'目立ちません。',key:false}
+ ],
+ findings:[
+  ['望診','顔色は蒼白でつやなし。舌は淡白・薄苔でやや乾く。'],
+  ['舌診','淡白・薄苔・やや乾燥。'],
+  ['聞診','声が弱く、乾いた咳。'],
+  ['脈診','脈は細・弱。'],
+  ['腹診','腹力は軟弱。']
+ ],
+ tongue:{prompt:'淡白で消耗があり、咳・息切れと不眠・健忘を伴う。最も合致する病態は？',
+  options:[{t:T('痰熱','熱を帯びた痰。黄色痰・黄膩苔。')+'（黄色痰・黄膩苔）',correct:false},{t:T('気虚',t.気虚)+'＋'+T('血虚',t.血虚)+'（肺気虚・心血虚を伴う）',correct:true},{t:T('陰虚',t.陰虚)+'が単独で主体',correct:false}],
+  ok:'<b>正解。</b> 全身の気血両虚に、肺気の弱り（咳・息切れ）と心の血・神の弱り（不眠・健忘・不安）が重なっています。',
+  ng:'<b>もう一度。</b> 痰熱でも陰虚単独でもない。消耗＋咳息切れ＋不眠健忘は<b>気血両虚（肺・心を含む）</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'倦怠・息切れ（気虚）／顔色不良・立ちくらみ（血虚）／咳・不眠・健忘',
+   options:[{t:'水滞が主体',correct:false},{t:T('気虚',t.気虚)+'＋'+T('血虚',t.血虚)+'（肺気虚・心血虚を伴う）',correct:true},{t:'瘀血が主体',correct:false}],
+   ok:'<b>正解。</b> 気血両虚が基盤で、肺気虚（咳・息切れ）と心血虚（不眠・健忘）を伴います。',
+   ng:'<b>再考を。</b> 水滞や瘀血ではない。中心は<b>気血両虚</b>です。'},
+  {n:'② 八綱',hint:'著明な虚／慢性・体内（裏）／冷えは軽度',
+   options:[{t:'表・実・熱',correct:false},{t:T('裏・虚','慢性で全身の気血が不足した状態。')+'（気血の虚、寒は軽度）',correct:true},{t:'裏・実・熱',correct:false}],
+   ok:'<b>正解。</b> 慢性（裏）で全身が不足（虚）。実熱や表証はありません。',
+   ng:'<b>再考を。</b> 実熱や表証ではない。全身消耗は<b>裏・虚</b>です。'},
+  {n:'③ 六病位',hint:'外感の病期ではなく、慢性の虚労',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（気血両虚）で捉える',correct:true},{t:T('少陽病',t.少陽病),correct:false}],
+   ok:'<b>正解。</b> 慢性消耗（フレイル）は内傷（気血両虚）として捉えます。',
+   ng:'<b>再考を。</b> 急性病期ではない。慢性の<b>内傷（気血両虚）</b>です。'},
+  {n:'④ 五臓',hint:'気血を生む源＋呼吸（咳・息切れ）＋精神（不眠・健忘・不安）',
+   options:[{t:T('肝',t.肝)+'の高ぶりが主体',correct:false},{t:T('脾',t.脾)+'を基盤に、'+T('肺',t.肺)+'（気・呼吸）と'+T('心',t.心)+'（神・血）を養う必要',correct:true},{t:T('腎',t.腎)+'の実が主体',correct:false}],
+   ok:'<b>正解。</b> 脾で気血を生じさせつつ、肺気を斂め心神を安んじる――この組み合わせが人参養栄湯の特徴です。',
+   ng:'<b>再考を。</b> 肝の高ぶりや腎の実ではない。脾を基盤に<b>肺・心</b>を養う病態です。'}
+ ],
+ rxPrompt:'診断は「気血両虚＋肺気虚・心神不安」。消耗・咳息切れ・不眠・健忘・不安。最も適した1剤は？',
+ rx:[
+  {name:'人参養栄湯',ok:true,html:'<b>正解 ― 人参養栄湯。</b> 十全大補湯から川芎を除き、遠志・五味子・陳皮を加えた構成。気血を補いつつ肺気を斂め心神を安んじる。慢性消耗＋咳息切れ＋不眠・健忘・不安（フレイル・COPD・がん支持療法）に。'},
+  {name:'十全大補湯',ok:false,html:'<b>次点。</b> 気血両虚でも呼吸器・精神症状が目立たず、冷え・皮膚乾燥が前景のとき。本例は咳・不眠・健忘が目立つので人参養栄湯。'},
+  {name:'補中益気湯',ok:false,html:'<b>不適。</b> 気虚・下垂・易感冒が主体で、血虚・精神症状が乏しいとき。'},
+  {name:'加味帰脾湯',ok:false,html:'<b>不適。</b> 心脾両虚の不安・不眠・出血傾向が前景で、呼吸器症状・全身消耗が軽いとき。'},
+  {name:'麦門冬湯',ok:false,html:'<b>不適。</b> 肺の陰虚・燥の乾いた咳が主体で、全身の気血両虚を伴わないとき。'}
+ ],
+ summary:[
+  ['主な所見','倦怠・るい痩・息切れ／顔色不良・立ちくらみ／乾いた咳・不眠・健忘・不安・食欲不振'],
+  ['① 気血水','<b>気血両虚</b>（肺気虚・心血虚を伴う）'],['② 八綱','<b>裏・虚</b>（寒は軽度）'],
+  ['③ 六病位','内傷（気血両虚）の虚労'],['④ 五臓','<b>脾</b>を基盤に<b>肺・心</b>を養う'],
+  ['方剤','<b>人参養栄湯</b>：気血を補い肺を斂め心神を安んじる。']
+ ],
+ diff:[
+  {name:'十全大補湯',text:'冷え・皮膚乾燥が前景、呼吸器/精神症状は軽い。'},
+  {name:'補中益気湯',text:'気虚・下垂・易感冒が主体。'},
+  {name:'加味帰脾湯',text:'心脾両虚の不安・不眠・出血傾向が前景。'},
+  {name:'麦門冬湯',text:'肺の陰虚・燥の乾いた咳が主体。'}
+ ],
+ caution:'人参養栄湯は地黄・人参等で胃もたれが出ることがある。<b>甘草</b>を含む。'
+},
+
+{
+ id:'kkht', domain:'精神・不眠', rxName:'加味帰脾湯',
+ title:'不眠・不安・易疲労と出血傾向', sub:'50歳女性。眠れず不安・抑うつ、易疲労・健忘、あざ・出血傾向',
+ patient:'50歳 女性。<br><b>主訴：</b>「眠れず、くよくよ考えて不安。疲れやすく食欲もない。物忘れが増え、些細なことで落ち込む」あざや歯ぐきの出血ができやすく、火照り・いらいらもある。',
+ learn:'心と脾がともに弱った<b>心脾両虚</b>に、軽い熱（いらいら・微熱感）が加わった病態です。',
+ minKey:5,
+ questions:[
+  {q:'睡眠は？',a:'寝つけず、途中で目が覚めます。考え事が止まりません。',key:true},
+  {q:'気分・不安は？',a:'不安でくよくよし、落ち込みます。',key:true},
+  {q:'疲れ・食欲は？',a:'疲れやすく、食欲もありません。',key:true},
+  {q:'物忘れは？',a:'増えました。',key:true},
+  {q:'出血しやすさは？',a:'あざや歯ぐきの出血ができやすいです。',key:true},
+  {q:'火照り・いらいらは？',a:'火照りやいらいらがあります。',key:true},
+  {q:'強い冷え・水様便は？',a:'著明ではありません。',key:false},
+  {q:'のどの異物感は？',a:'特にありません。',key:false}
+ ],
+ findings:[
+  ['望診','顔色はつやなくやや萎黄。舌は淡（尖がやや紅）・薄苔。'],
+  ['舌診','淡・舌尖やや紅・薄苔。'],
+  ['聞診','声は穏やかで力にやや乏しい。'],
+  ['脈診','脈は細・弱（やや数）。'],
+  ['腹診','腹力は軟弱。']
+ ],
+ tongue:{prompt:'淡い舌（尖やや紅）に、不眠・不安・健忘・出血傾向・火照り。最も合致する病態は？',
+  options:[{t:'実熱（紅舌・黄苔）が主体',correct:false},{t:T('心脾両虚','心（神・血）と脾（気血生化・統血）がともに不足した状態。')+'＋軽い'+T('虚熱','陰血の不足で相対的に生じる軽い熱。火照り・いらいら。')+'',correct:true},{t:'水滞が主体',correct:false}],
+  ok:'<b>正解。</b> 不眠・不安・健忘（心）と易疲労・食欲不振・出血傾向（脾＝気血生化・統血）の心脾両虚に、火照り・いらいらの軽い虚熱が加わっています。',
+  ng:'<b>もう一度。</b> 実熱でも水滞でもない。不眠・不安・健忘＋出血傾向は<b>心脾両虚＋軽い虚熱</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'易疲労・食欲不振（気虚）／不眠・不安・健忘・出血傾向（血の不足と統血失調）／火照り',
+   options:[{t:'瘀血が主体',correct:false},{t:T('気虚',t.気虚)+'＋'+T('血虚',t.血虚)+'（心脾両虚）、軽い熱を伴う',correct:true},{t:'水滞が主体',correct:false}],
+   ok:'<b>正解。</b> 気と血の不足（心脾両虚）が主体で、軽い虚熱（火照り・いらいら）を伴います。',
+   ng:'<b>再考を。</b> 瘀血や水滞ではない。中心は<b>心脾両虚（気血の不足）</b>です。'},
+  {n:'② 八綱',hint:'慢性・体内（裏）／全身の虚／火照り・いらいら（軽い熱）',
+   options:[{t:'表・実・寒',correct:false},{t:T('裏・虚','慢性で気血が不足した状態。')+'＋軽い熱（虚熱）',correct:true},{t:'裏・実・寒',correct:false}],
+   ok:'<b>正解。</b> 慢性（裏）で全身が不足（虚）し、軽い熱（虚熱）を伴います。だから補いつつ熱を少し冷まします。',
+   ng:'<b>再考を。</b> 表寒でも裏実寒でもない。<b>裏・虚＋軽い虚熱</b>です。'},
+  {n:'③ 六病位',hint:'外感の病期ではなく、慢性の内傷',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（心脾両虚）で捉える',correct:true},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 慢性の不眠・不安・易疲労は内傷（心脾両虚）として捉えます。',
+   ng:'<b>再考を。</b> 急性熱性疾患の病期ではない。慢性の<b>内傷（心脾両虚）</b>です。'},
+  {n:'④ 五臓',hint:'不眠・不安・健忘（神・血）＋易疲労・食欲不振・出血傾向（気血生化・統血）',
+   options:[{t:T('肺',t.肺)+'の宣発失調が主体',correct:false},{t:T('心',t.心)+'（神・血）と'+T('脾',t.脾)+'（気血生化・統血）の両虚',correct:true},{t:T('腎',t.腎)+'の実が主体',correct:false}],
+   ok:'<b>正解。</b> 心の血と神、脾の気血を生み統べる働きがともに弱った状態。心脾を補い神を安んじます。',
+   ng:'<b>再考を。</b> 肺や腎ではない。中心は<b>心と脾の両虚</b>です。'}
+ ],
+ rxPrompt:'診断は「心脾両虚＋軽い虚熱」。不眠・不安・健忘・易疲労・出血傾向・火照り。最も適した1剤は？',
+ rx:[
+  {name:'加味帰脾湯',ok:true,html:'<b>正解 ― 加味帰脾湯。</b> 帰脾湯（人参・黄耆・白朮・茯神・酸棗仁・竜眼肉・遠志・当帰・木香など）に山梔子・柴胡を加え、軽い熱・いらいらを清す。心脾両虚の不眠・不安・健忘・易疲労・出血傾向＋火照りに。'},
+  {name:'帰脾湯',ok:false,html:'<b>次点。</b> 同じ心脾両虚でも、火照り・いらいら（熱）を伴わないとき。本例は熱所見があるので加味帰脾湯。'},
+  {name:'酸棗仁湯',ok:false,html:'<b>不適。</b> 心身の疲れによる不眠（虚労虚煩）が主で、食欲不振・出血傾向・抑うつが乏しいとき。'},
+  {name:'抑肝散',ok:false,html:'<b>不適。</b> 易怒・興奮・筋緊張（肝の高ぶり）が前景のとき。本例は不安・抑うつ・出血傾向の心脾両虚です。'},
+  {name:'半夏厚朴湯',ok:false,html:'<b>不適。</b> のどの異物感（梅核気）・気滞・不安が主体で、貧血・健忘・出血傾向を伴わないとき。'}
+ ],
+ summary:[
+  ['主な所見','不眠・不安・抑うつ・健忘／易疲労・食欲不振／出血傾向・火照り・いらいら／舌淡（尖紅）・脈細弱やや数'],
+  ['① 気血水','<b>気血の不足（心脾両虚）</b>＋軽い熱'],['② 八綱','<b>裏・虚＋軽い虚熱</b>'],
+  ['③ 六病位','内傷（心脾両虚）'],['④ 五臓','<b>心（神・血）＋脾（気血生化・統血）の両虚</b>'],
+  ['方剤','<b>加味帰脾湯</b>：心脾を補い神を安んじ、軽い熱を清す。']
+ ],
+ diff:[
+  {name:'帰脾湯',text:'心脾両虚だが火照り・いらいら（熱）なし。'},
+  {name:'酸棗仁湯',text:'心身の疲れによる不眠（虚労虚煩）が主。'},
+  {name:'抑肝散',text:'易怒・興奮・筋緊張（肝の高ぶり）が前景。'},
+  {name:'半夏厚朴湯',text:'咽喉異物感・気滞・不安が主体。'}
+ ],
+ caution:'加味帰脾湯は<b>甘草</b>を含む。山梔子の長期連用で腸間膜静脈硬化症の報告があり、長期使用例では腹部症状に注意する。'
+},
+
+{
+ id:'msn', domain:'便秘', rxName:'麻子仁丸',
+ title:'高齢者のコロコロ便秘', sub:'78歳女性。兎糞状の硬便・排便困難、乾燥傾向、強い腹満なし',
+ patient:'78歳 女性。やせ型、体力低下。<br><b>主訴：</b>「便がコロコロ硬くて出にくく、数日に一度。強くいきむ。口や肌が乾く」市販の刺激性下剤では腹痛と残便感が強い。',
+ learn:'腸が乾いて便が硬くなる<b>虚証・乾燥タイプの便秘（脾約）</b>。実熱の便秘との違いを学びます。',
+ minKey:5,
+ questions:[
+  {q:'便の性状は？',a:'コロコロした兎の糞のように硬いです。',key:true},
+  {q:'頻度・出にくさは？',a:'数日に1回で、強くいきまないと出ません。',key:true},
+  {q:'腹痛・腹満は？',a:'軽い程度で、強い張りや痛みはありません。',key:true},
+  {q:'体力・食欲は？',a:'体力が落ち、少食です。',key:true},
+  {q:'乾燥は？',a:'口や肌、便も乾く感じです。',key:true},
+  {q:'発熱・強い口渇は？',a:'ありません。',key:false},
+  {q:'強い冷えは？',a:'目立ちません。',key:false},
+  {q:'残便感は？',a:'刺激性の下剤だと腹痛と残便感が強く出ます。',key:false}
+ ],
+ findings:[
+  ['望診','やせ型。舌はやや乾き（淡紅〜やや紅）・少苔。'],
+  ['舌診','やや乾燥・少苔。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は細（やや数のことも）。'],
+  ['腹診','腹力はやや軟。強い腹満・圧痛・抵抗はない。']
+ ],
+ tongue:{prompt:'兎糞状の硬便・乾燥傾向・体力低下、強い腹満はない。最も合致する病態は？',
+  options:[{t:'裏の実熱の腑証（'+T('承気湯証','高熱・腹満・圧痛を伴う裏実熱の便秘。承気湯類の適応。')+'）',correct:false},{t:T('腸の乾燥','津液（うるおい）が乏しく腸が乾いて便が硬くなる。')+'（津液不足）による虚証の便秘（'+T('脾約','胃腸の津液が乏しく便が硬く小さくなる状態。麻子仁丸の古典的適応。')+'）',correct:true},{t:T('陽虚','冷えにより腸が動かない便秘（冷秘）。')+'の冷秘',correct:false}],
+  ok:'<b>正解。</b> 強い腹満・圧痛のある実熱の腑証ではなく、腸の乾燥（津液不足）で便が硬くなる虚証の便秘（脾約）です。',
+  ng:'<b>もう一度。</b> 高熱・腹満・圧痛の実熱の腑証でも、冷えの冷秘でもない。乾燥・体力低下は<b>腸の乾燥による虚証の便秘（脾約）</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'兎糞・乾燥・少苔／強い腹満や熱所見はない',
+   options:[{t:'水滞が主体',correct:false},{t:T('津液（陰）の不足','体を潤す陰液の不足。腸の乾燥として現れる。')+'による腸の乾燥',correct:true},{t:'瘀血が主体',correct:false}],
+   ok:'<b>正解。</b> うるおい（津液・陰）が乏しく腸が乾いて便が硬くなる病態。潤して通じさせます。',
+   ng:'<b>再考を。</b> 水滞や瘀血ではない。中心は<b>津液不足による腸の乾燥</b>です。'},
+  {n:'② 八綱',hint:'強い腹満・圧痛・高熱はない／体力低下・乾燥',
+   options:[{t:T('裏・実・熱','承気湯証＝高熱・腹満・圧痛の便秘。')+'（承気湯証）',correct:false},{t:T('裏・虚','体力低下を背景にした、乾燥（燥）による便秘。')+'（燥を伴う、実熱の腑証ではない）',correct:true},{t:'表・寒',correct:false}],
+   ok:'<b>正解。</b> 高熱・腹満・圧痛の実熱の腑証ではなく、体力低下を背景にした乾燥（燥）の便秘。穏やかに潤下します。',
+   ng:'<b>再考を。</b> 承気湯証の実熱でも表寒でもない。体力低下＋乾燥は<b>裏・虚（燥）</b>です。'},
+  {n:'③ 六病位',hint:'激しい実熱の腑証より軽く、裏で津液が乏しい便秘',
+   options:[{t:T('太陽病',t.太陽病)+'（表証）',correct:false},{t:'裏で津液が乏しい便秘（'+T('脾約','陽明病篇の脾約。胃熱・腸燥で便が硬く小さくなる軽症。')+'）、激しい実熱の腑証ではない',correct:true},{t:T('少陰病',t.少陰病)+'の純然たる虚寒',correct:false}],
+   ok:'<b>正解。</b> 麻子仁丸は「脾約」――裏で津液が乏しく便が硬くなる病態で、承気湯の激しい実熱の腑証より軽いものです。',
+   ng:'<b>再考を。</b> 表証でも純然たる虚寒でもない。<b>裏で津液が乏しい便秘（脾約）</b>です。'},
+  {n:'④ 五臓',hint:'腸が乾いて便が硬い＝消化管のうるおい不足',
+   options:[{t:T('肝',t.肝)+'の高ぶり',correct:false},{t:T('脾',t.脾)+'胃・大腸の乾燥（津液不足）',correct:true},{t:T('心',t.心)+'の失調',correct:false}],
+   ok:'<b>正解。</b> 胃腸（大腸）のうるおい不足が中心。潤腸薬で腸を潤しつつ穏やかに通じさせます。',
+   ng:'<b>再考を。</b> 肝や心ではない。中心は<b>脾胃・大腸の乾燥（津液不足）</b>です。'}
+ ],
+ rxPrompt:'診断は「腸の乾燥による虚証の便秘（脾約）」。兎糞状の硬便・排便困難・乾燥・体力低下。最も適した1剤は？',
+ rx:[
+  {name:'麻子仁丸',ok:true,html:'<b>正解 ― 麻子仁丸。</b> 麻子仁・杏仁・芍薬で潤し、小承気（大黄・厚朴・枳実）を小量配して穏やかに通じる。高齢者・虚証の乾燥性便秘（兎糞便）に。'},
+  {name:'大承気湯',ok:false,html:'<b>不適。</b> 高熱・腹満・圧痛の裏実熱の便秘に。虚証・乾燥主体の本例に峻下は不適です。'},
+  {name:'大黄甘草湯',ok:false,html:'<b>次点。</b> 比較的体力のある人の常習便秘に。乾燥・虚の強い高齢者は麻子仁丸がより穏当です。'},
+  {name:'潤腸湯',ok:false,html:'<b>近い選択肢。</b> さらに血虚・乾燥が強い老人性便秘に。地黄等で胃に障ることもあり、兎糞・脾約の本例はまず麻子仁丸が基本です。'},
+  {name:'大建中湯',ok:false,html:'<b>不適。</b> 腹部の冷え・腹満・蠕動不穏に。乾燥性の便秘とは病態が異なります。'}
+ ],
+ summary:[
+  ['主な所見','兎糞状の硬便・排便困難／軽い腹痛・強い腹満なし／体力低下・少食・乾燥傾向・舌やや乾少苔'],
+  ['① 気血水','<b>津液（陰）の不足による腸の乾燥</b>'],['② 八綱','<b>裏・虚（燥）</b>、実熱の腑証ではない'],
+  ['③ 六病位','裏で津液が乏しい便秘（<b>脾約</b>）'],['④ 五臓','<b>脾胃・大腸の乾燥（津液不足）</b>'],
+  ['方剤','<b>麻子仁丸</b>：潤腸＋穏やかな潤下。']
+ ],
+ diff:[
+  {name:'大承気湯',text:'高熱・腹満・圧痛の裏実熱の便秘。'},
+  {name:'大黄甘草湯',text:'比較的体力ある人の常習便秘。'},
+  {name:'潤腸湯',text:'血虚・乾燥がさらに強い老人性便秘。'},
+  {name:'大建中湯',text:'腹部の冷え・腹満・蠕動不穏。'}
+ ],
+ caution:'麻子仁丸は<b>大黄</b>を含む。妊娠中・授乳中は慎重に。連用で耐性・大腸メラノーシスを生じうるため、漫然投与を避ける。'
+},
+
+{
+ id:'dkt', domain:'消化器（腹部）', rxName:'大建中湯',
+ title:'腹部の冷えと腹満・腸のうねり', sub:'68歳男性。腹部手術歴。お腹が冷えて張り、腸が動いてうねる',
+ patient:'68歳 男性。腹部手術歴あり。<br><b>主訴：</b>「お腹が冷えて張り、腸がゴロゴロ動いてうねる感じ。ガスが出にくく腹満。温めると楽で、冷えると痛む」やや虚弱で冷え性。',
+ learn:'中焦（お腹）の強い<b>虚寒</b>で腸の動きが乱れた病態。術後の腸管運動低下にも用います。',
+ minKey:5,
+ questions:[
+  {q:'お腹の冷えは？温めると楽？',a:'冷たく、温めると楽になります。',key:true},
+  {q:'腹満・ガスは？',a:'張って、ガスが出にくいです。',key:true},
+  {q:'腸の動きは？',a:'ゴロゴロ動いてうねる感じで、お腹の表面に動きが見えることもあります。',key:true},
+  {q:'腹痛の誘因は？',a:'冷えると痛みます。',key:true},
+  {q:'既往は？',a:'腹部の手術歴があります。',key:true},
+  {q:'全身の冷え・体力は？',a:'やや虚弱で冷え性です。',key:true},
+  {q:'口渇・実熱は？',a:'ありません。',key:false},
+  {q:'発熱は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','舌は淡・白苔（湿）。'],
+  ['舌診','淡・白湿苔。'],
+  ['聞診','腸雑音（グル音）が亢進。'],
+  ['脈診','脈は沈・遅（弱）。'],
+  ['腹診','腹力は軟弱、腹部は冷たい。'+T('腸蠕動の亢進','腸の動きが強まり、腹壁から拍動・うねりとして触れる/見える所見。')+'を腹壁から触れる/見ることがある。']
+ ],
+ tongue:{prompt:'腹部の強い冷え・腹満・腸のうねり、温めると軽快。最も合致する病態は？',
+  options:[{t:'裏の実熱の腑証',correct:false},{t:T('中焦（脾）の虚寒','お腹を温める力が落ち（陽虚）、冷えにより気がめぐらず腹満・腹痛・蠕動不穏となる。')+'（陰寒で気がめぐらない）',correct:true},{t:T('陰虚',t.陰虚)+'（乾燥）',correct:false}],
+  ok:'<b>正解。</b> お腹を温める力が落ち（虚寒）、冷えで気がめぐらず腹満・腹痛・蠕動の乱れが出ます。温めると楽になるのが手がかりです。',
+  ng:'<b>もう一度。</b> 実熱の腑証でも陰虚の乾燥でもない。強い冷え＋腹満＋温めて軽快は<b>中焦の虚寒</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'腹部の強い冷え（陽の不足）／腹満・ガス停滞・蠕動の乱れ（気のめぐりの停滞）',
+   options:[{t:'血虚が主体',correct:false},{t:T('陽（気）の不足','陽虚＝温める力の不足。')+'＝中焦の虚寒に、'+T('気の停滞','冷えで気がめぐらず腹満・腹痛となる。')+'を伴う',correct:true},{t:'湿熱が主体',correct:false}],
+   ok:'<b>正解。</b> お腹を温める陽気が不足し（虚寒）、気がめぐらず腹満・腹痛・蠕動の乱れが出ます。',
+   ng:'<b>再考を。</b> 血虚や湿熱ではない。中心は<b>中焦の虚寒＋気の停滞</b>です。'},
+  {n:'② 八綱',hint:'腹部の強い冷え（寒）／虚弱・脈沈遅弱（虚）／体内（裏）',
+   options:[{t:'裏・実・熱',correct:false},{t:T('裏・虚・寒','体内（裏）で正気が不足し（虚）、強く冷えた（寒）状態。')+'が著明',correct:true},{t:'表・実・寒',correct:false}],
+   ok:'<b>正解。</b> 体内（裏）で虚弱（虚）かつ強い冷え（寒）。温めて建て直す（建中）治療です。',
+   ng:'<b>再考を。</b> 裏実熱でも表証でもない。腹部の強い冷え・脈沈遅弱は<b>裏・虚・寒</b>です。'},
+  {n:'③ 六病位',hint:'慢性・裏の虚寒で消化管の機能が乱れる（寒疝）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:T('太陰病',t.太陰病)+'（裏の虚寒）',correct:true},{t:T('陽明病',t.陽明病)+'（裏実熱）',correct:false}],
+   ok:'<b>正解。</b> 裏の虚寒で消化管が冷えて動きが乱れる病態（寒疝）は<b>太陰病</b>に位置づきます。',
+   ng:'<b>再考を。</b> 太陽病（表）や陽明病（裏実熱）ではない。<b>太陰病（裏の虚寒）</b>です。'},
+  {n:'④ 五臓',hint:'お腹の冷え・腹満・蠕動の乱れ＝温める力と消化を担う臓',
+   options:[{t:T('肝',t.肝)+'の高ぶり',correct:false},{t:T('脾',t.脾)+'（胃腸）の'+T('陽虚','温める力の不足。冷えと運化低下を招く。')+'＝中焦の虚寒',correct:true},{t:T('肺',t.肺)+'の宣発失調',correct:false}],
+   ok:'<b>正解。</b> お腹（脾胃）を温める力が落ちた中焦の虚寒。強く温めて運化を回復させます。',
+   ng:'<b>再考を。</b> 肝や肺ではない。中心は<b>脾（胃腸）の陽虚＝中焦の虚寒</b>です。'}
+ ],
+ rxPrompt:'診断は「中焦の虚寒（太陰）・寒疝」。腹部の強い冷え・腹満・腸のうねり・温めて軽快。最も適した1剤は？',
+ rx:[
+  {name:'大建中湯',ok:true,html:'<b>正解 ― 大建中湯。</b> 山椒・乾姜・人参・膠飴。中焦を強く温め（大いに建てる）、冷えによる腹満・腹痛・蠕動不穏を治す。腹部術後の腸管運動低下・癒着性イレウスの予防に広く用いられます。'},
+  {name:'小建中湯',ok:false,html:'<b>不適。</b> 虚弱で腹直筋が攣急する腹痛（中焦の虚）に。本例の強い冷え・腹満・腸のうねりには大建中湯。'},
+  {name:'真武湯',ok:false,html:'<b>不適。</b> 腎脾の陽虚＋水滞（めまい・水様便・浮腫・脈沈微）に。本例は腹部の冷え・腹満・蠕動が前景です。'},
+  {name:'桂枝加芍薬湯',ok:false,html:'<b>不適。</b> 腹満・腹痛（過敏性腸など）を芍薬で緩めるが、強い冷え・腸のうねりが前景の本例は大建中湯。'},
+  {name:'大承気湯',ok:false,html:'<b>不適（逆）。</b> 実熱の腸閉塞・便秘に用いる峻下剤。冷え主体の本例には向きません。'}
+ ],
+ summary:[
+  ['主な所見','腹部の強い冷え・温めて軽快／腹満・ガス停滞・腸のうねり／腹部手術歴・脈沈遅弱・腸蠕動亢進'],
+  ['① 気血水','<b>陽（気）の不足＝中焦の虚寒＋気の停滞</b>'],['② 八綱','<b>裏・虚・寒</b>が著明'],
+  ['③ 六病位','<b>太陰病（裏の虚寒）</b>'],['④ 五臓','<b>脾（胃腸）の陽虚＝中焦の虚寒</b>'],
+  ['方剤','<b>大建中湯</b>：中焦を強く温める。']
+ ],
+ diff:[
+  {name:'小建中湯',text:'虚弱・腹直筋攣急の腹痛（中焦の虚）。'},
+  {name:'真武湯',text:'腎脾の陽虚＋水滞（めまい・水様便・浮腫）。'},
+  {name:'桂枝加芍薬湯',text:'腹満・腹痛を緩める（過敏性腸など）。'},
+  {name:'大承気湯',text:'実熱の腸閉塞・便秘（冷えには逆）。'}
+ ],
+ caution:'大建中湯は比較的安全だが、機械的腸閉塞では器質的閉塞の除外と外科的判断を優先する。膠飴を含み甘い。'
+},
+
+{
+ id:'krb', domain:'精神・虚弱', rxName:'桂枝加竜骨牡蛎湯',
+ title:'神経過敏・動悸・不眠', sub:'35歳男性。やせ型・神経質。疲労・動悸・不眠・のぼせて足冷',
+ patient:'35歳 男性。やせ型・神経質。<br><b>主訴：</b>「疲れやすく、動悸がして眠れない。夢が多く寝汗をかき、いらいらする。気力が出ない」のぼせる一方で足は冷える。',
+ learn:'虚弱を背景に気が上に浮き、心神が不安定になった<b>上盛下虚</b>の病態です。',
+ minKey:5,
+ questions:[
+  {q:'動悸やみぞおちのドキドキは？',a:'動悸があり、おへその上あたりがドキドキすることもあります。',key:true},
+  {q:'睡眠・夢は？',a:'寝つけず、夢を多く見ます。',key:true},
+  {q:'のぼせと足の冷えは？',a:'顔はのぼせるのに、足は冷えます。',key:true},
+  {q:'疲れやすさ・気力は？',a:'疲れやすく、気力が出ません。',key:true},
+  {q:'寝汗や遺精は？',a:'寝汗をかき、遺精もあります。',key:true},
+  {q:'神経の過敏さは？',a:'ささいなことが気になり、いらいらします。',key:true},
+  {q:'強い口渇・便秘は？',a:'特にありません。',key:false}
+ ],
+ findings:[
+  ['望診','やせ型。舌は淡紅、苔は薄白。'],
+  ['舌診','淡紅・薄白苔。'],
+  ['聞診','声はやや力に乏しい。'],
+  ['脈診','脈は<b>浮大で按じると無力</b>（虚）、やや数。'],
+  ['腹診','腹力は軟弱。腹直筋の緊張、'+T('臍上の動悸','臍の上で拍動を強く触れる（臍上悸）。気が上に突き上げる所見。')+'の亢進。']
+ ],
+ tongue:{prompt:'動悸・不眠・のぼせて足冷・脈は浮大で無力。最も合致する病態は？',
+  options:[{t:'実熱（紅舌・黄苔）',correct:false},{t:'虚を背景に気が上に浮き神が不安定（'+T('上盛下虚','下が虚して、相対的に上に気・熱が浮く状態。のぼせと足冷が同居する。')+'）',correct:true},{t:T('水滞',t.水滞)+'が主体',correct:false}],
+  ok:'<b>正解。</b> 脈が浮いて大きいのに押すと力がない＝虚。下が虚して気が上に浮き（のぼせ・動悸・不眠）、心神が落ち着かない上盛下虚です。',
+  ng:'<b>もう一度。</b> 実熱でも水滞でもない。脈浮大無力・のぼせ足冷・動悸不眠は<b>上盛下虚（虚＋気の上浮）</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'疲労・脈無力（気の不足）／動悸・のぼせ・臍上悸（気が上に突き上げる）',
+   options:[{t:T('瘀血',t.瘀血)+'が主体',correct:false},{t:T('気虚',t.気虚)+'を背景にした気の上衝（'+T('気逆',t.気逆)+'）',correct:true},{t:'実熱が主体',correct:false}],
+   ok:'<b>正解。</b> 気の不足を背景に、気が上へ突き上げて動悸・のぼせ・臍上悸が出ます。',
+   ng:'<b>再考を。</b> 瘀血や実熱ではない。<b>気虚を背景にした気の上衝</b>です。'},
+  {n:'② 八綱',hint:'のぼせ（上の熱感）と足冷（下の寒）／疲労・腹力軟弱・脈無力（虚）',
+   options:[{t:'表・実・寒',correct:false},{t:T('裏・虚','慢性で正気が不足し、上に熱感・下に冷えを伴う。')+'（上熱下寒の傾向）',correct:true},{t:'裏・実・熱',correct:false}],
+   ok:'<b>正解。</b> 慢性で虚（裏・虚）。のぼせと足冷が同居する上熱下寒の傾向です。',
+   ng:'<b>再考を。</b> 表実でも裏実熱でもない。<b>裏・虚（上熱下寒）</b>です。'},
+  {n:'③ 六病位',hint:'急性の外感ではなく、慢性の虚弱（虚労）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（'+T('虚労','慢性の消耗・虚弱の病態。')+'）で捉える',correct:true},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 慢性の虚弱（虚労）として内傷で捉えます。',
+   ng:'<b>再考を。</b> 急性熱性疾患ではない。慢性の<b>内傷（虚労）</b>です。'},
+  {n:'④ 五臓',hint:'動悸・不眠（神）／遺精・足冷（精・下の虚）',
+   options:[{t:T('脾',t.脾)+'の運化低下が単独で主体',correct:false},{t:T('心',t.心)+'（神）を主に'+T('腎',t.腎)+'（精）の不安定を伴う',correct:true},{t:T('肺',t.肺)+'の宣発失調',correct:false}],
+   ok:'<b>正解。</b> 心の神が落ち着かず、腎の精も弱る（遺精・足冷）。浮いた気を鎮め陰陽を調えます。',
+   ng:'<b>再考を。</b> 脾単独や肺ではない。中心は<b>心（神）＋腎（精）</b>です。'}
+ ],
+ rxPrompt:'診断は「虚を背景にした気の上衝（上盛下虚）・心神不安」。やせ型・神経質で動悸・不眠・遺精・臍上悸。最も適した1剤は？',
+ rx:[
+  {name:'桂枝加竜骨牡蛎湯',ok:true,html:'<b>正解 ― 桂枝加竜骨牡蛎湯。</b> 桂枝湯で陰陽を調和し、竜骨・牡蛎で浮いた気を鎮める（重鎮安神）。虚弱・神経過敏・動悸・不眠・遺精・臍上悸に。'},
+  {name:'柴胡加竜骨牡蛎湯',ok:false,html:'<b>次点。</b> 比較的体力があり胸脇苦満・便秘・驚きやすさ（実証寄り）が前景のとき。本例は虚弱・腹力軟弱なので桂枝加竜骨牡蛎湯。'},
+  {name:'酸棗仁湯',ok:false,html:'<b>不適。</b> 心身の疲れによる不眠が主で、臍上悸・遺精・のぼせ足冷が乏しいとき。'},
+  {name:'加味帰脾湯',ok:false,html:'<b>不適。</b> 心脾両虚の不安・健忘・出血傾向が前景のとき。'},
+  {name:'抑肝散',ok:false,html:'<b>不適。</b> 易怒・興奮・筋緊張（肝の高ぶり）が前景のとき。'}
+ ],
+ summary:[
+  ['主な所見','動悸・不眠・夢多・寝汗・遺精／のぼせて足冷・いらいら／やせ型・腹直筋緊張・臍上悸・脈浮大無力'],
+  ['① 気血水','<b>気虚を背景にした気の上衝</b>'],['② 八綱','<b>裏・虚</b>（上熱下寒の傾向）'],
+  ['③ 六病位','内傷（虚労）'],['④ 五臓','<b>心（神）＋腎（精）</b>の不安定'],
+  ['方剤','<b>桂枝加竜骨牡蛎湯</b>：陰陽調和＋重鎮安神。']
+ ],
+ diff:[
+  {name:'柴胡加竜骨牡蛎湯',text:'体力中等度以上・胸脇苦満・便秘・驚きやすさ。'},
+  {name:'酸棗仁湯',text:'心身の疲れによる不眠（虚労虚煩）。'},
+  {name:'加味帰脾湯',text:'心脾両虚の不安・健忘・出血傾向。'},
+  {name:'抑肝散',text:'易怒・興奮・筋緊張（肝の高ぶり）。'}
+ ],
+ caution:'桂枝・甘草を含む（甘草→偽アルドステロン症に注意）。竜骨・牡蛎は鉱物/貝殻由来。'
+},
+
+{
+ id:'srb', domain:'精神', rxName:'柴胡加竜骨牡蛎湯',
+ title:'いらいら・不眠・動悸（実証）', sub:'50歳男性。体力あり。いらいら・不眠・動悸・驚きやすさ・便秘',
+ patient:'50歳 男性。がっしり型。<br><b>主訴：</b>「いらいらして眠れず、動悸がする。ちょっとした音で驚く。便秘ぎみで血圧も高め」',
+ learn:'体力のある人の、少陽の鬱熱に気の高ぶりが加わった<b>実証寄り</b>の精神不安です。',
+ minKey:5,
+ questions:[
+  {q:'いらいら・驚きやすさは？',a:'いらいらして、ちょっとした音にも驚きます。',key:true},
+  {q:'睡眠・夢は？',a:'寝つけず、夢も多いです。',key:true},
+  {q:'動悸は？',a:'動悸があります。',key:true},
+  {q:'お通じは？',a:'便秘ぎみです。',key:true},
+  {q:'季肋部の張りは？',a:'みぞおち〜わき腹が重苦しく張ります。',key:true},
+  {q:'体力・体格は？',a:'体力はある方です。',key:true},
+  {q:'強い冷え・倦怠は？',a:'特にありません。',key:false}
+ ],
+ findings:[
+  ['望診','充実した体格。舌はやや紅、苔は黄色みを帯びる。'],
+  ['舌診','やや紅・黄苔ぎみ。'],
+  ['聞診','声に力がある。'],
+  ['脈診','脈は<b>弦・有力</b>。'],
+  ['腹診','腹力は中等度〜充実。'+T('胸脇苦満',t.胸脇苦満)+'(+)、臍上悸。']
+ ],
+ tongue:{prompt:'いらいら・不眠・驚きやすさ・便秘・胸脇苦満・脈弦有力。最も合致する病態は？',
+  options:[{t:'純然たる裏の虚寒',correct:false},{t:T('少陽の鬱熱','半表半裏に熱がこもり、肝胆の疏泄が滞った状態。')+'＋気の高ぶり（実寄り）',correct:true},{t:T('血虚',t.血虚)+'が主体',correct:false}],
+  ok:'<b>正解。</b> 胸脇苦満・口の所見・脈弦有力・便秘は、少陽に熱がこもり気が高ぶった実証寄りの病態です。',
+  ng:'<b>もう一度。</b> 虚寒でも血虚でもない。胸脇苦満・脈弦有力・便秘は<b>少陽の鬱熱＋気の高ぶり</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'季肋部の張り（気の鬱滞）／いらいら・のぼせ・熱を帯びる',
+   options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:'気の鬱滞＋気の高ぶり（'+T('気逆',t.気逆)+'）、熱を帯びる',correct:true},{t:T('水滞',t.水滞)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 気がめぐらず鬱して熱を帯び、上に高ぶって動悸・いらいらが出ます。',
+   ng:'<b>再考を。</b> 血虚や水滞ではない。<b>気の鬱滞＋高ぶり（熱）</b>です。'},
+  {n:'② 八綱',hint:'体力充実・脈弦有力（実）／便秘・黄苔（熱）／半表半裏',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('実証寄り・熱','邪が盛んで体力も充実し、熱がこもる。')+'（半表半裏）',correct:true},{t:'表・実・寒',correct:false}],
+   ok:'<b>正解。</b> 実証寄り・熱で、半表半裏（少陽）に位置します。だから疏らしつつ鎮めます。',
+   ng:'<b>再考を。</b> 虚寒でも表寒でもない。<b>実証寄り・熱（半表半裏）</b>です。'},
+  {n:'③ 六病位',hint:'胸脇苦満・口苦・脈弦 ＝ 柴胡剤の病位',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:T('少陽病',t.少陽病)+'（柴胡剤の病位）',correct:true},{t:T('太陰病',t.太陰病),correct:false}],
+   ok:'<b>正解。</b> 胸脇苦満・脈弦は<b>少陽病</b>。柴胡剤の適応です。',
+   ng:'<b>再考を。</b> 太陽病でも太陰病でもない。胸脇苦満・脈弦は<b>少陽病</b>です。'},
+  {n:'④ 五臓',hint:'季肋部の張り・いらいら（疏泄の鬱）＋動悸・不眠（神）',
+   options:[{t:T('脾',t.脾)+'の虚が主体',correct:false},{t:T('肝','肝胆は疏泄を主る。鬱して熱を帯びると胸脇苦満・いらいら。')+'胆（疏泄の鬱熱）＋'+T('心',t.心)+'（神）',correct:true},{t:T('腎',t.腎)+'の虚が主体',correct:false}],
+   ok:'<b>正解。</b> 肝胆の鬱熱に心神の不安が重なります。少陽を疏らし、竜骨牡蛎で鎮めます。',
+   ng:'<b>再考を。</b> 脾虚や腎虚ではない。中心は<b>肝胆（鬱熱）＋心（神）</b>です。'}
+ ],
+ rxPrompt:'診断は「少陽の鬱熱＋気の高ぶり（実証寄り）」。体力中等度以上で精神不安・不眠・動悸・便秘・高血圧傾向。最も適した1剤は？',
+ rx:[
+  {name:'柴胡加竜骨牡蛎湯',ok:true,html:'<b>正解 ― 柴胡加竜骨牡蛎湯。</b> 小柴胡湯の変方に竜骨・牡蛎・桂枝（・大黄）を加える。少陽の鬱熱を疏らし重鎮安神。体力中等度以上の精神不安・不眠・動悸・便秘・高血圧傾向に。'},
+  {name:'桂枝加竜骨牡蛎湯',ok:false,html:'<b>不適。</b> 虚弱・腹力軟弱・遺精・臍上悸（虚証）のとき。本例は実寄りで胸脇苦満・便秘。'},
+  {name:'抑肝散',ok:false,html:'<b>不適。</b> 易怒・興奮・筋緊張（肝の高ぶり）が前景のとき（高齢BPSDなど）。'},
+  {name:'黄連解毒湯',ok:false,html:'<b>不適。</b> 実熱主体ののぼせ・顔面紅潮・出血傾向に。胸脇苦満・精神不安が主なら柴胡剤。'},
+  {name:'大柴胡湯',ok:false,html:'<b>不適。</b> 胸脇苦満＋便秘＋上腹部の張りが強い消化器主体の実証に。精神症状が前景なら柴胡加竜骨牡蛎湯。'}
+ ],
+ summary:[
+  ['主な所見','いらいら・不眠・動悸・驚きやすさ／便秘・血圧高め／胸脇苦満・臍上悸・脈弦有力・体格充実'],
+  ['① 気血水','<b>気の鬱滞＋高ぶり（熱）</b>'],['② 八綱','<b>実証寄り・熱</b>（半表半裏）'],
+  ['③ 六病位','<b>少陽病</b>'],['④ 五臓','<b>肝胆（鬱熱）＋心（神）</b>'],
+  ['方剤','<b>柴胡加竜骨牡蛎湯</b>：和解＋重鎮安神。']
+ ],
+ diff:[
+  {name:'桂枝加竜骨牡蛎湯',text:'虚弱・腹力軟弱・遺精・臍上悸（虚証）。'},
+  {name:'抑肝散',text:'易怒・興奮・筋緊張（肝の高ぶり）。'},
+  {name:'黄連解毒湯',text:'実熱主体（のぼせ・顔面紅潮・出血傾向）。'},
+  {name:'大柴胡湯',text:'胸脇苦満＋便秘＋上腹部の張りの消化器主体。'}
+ ],
+ caution:'製剤により大黄（瀉下）を含む。黄芩による肝障害・間質性肺炎はまれだが念頭に。'
+},
+
+{
+ id:'sct', domain:'小児・虚弱', rxName:'小建中湯',
+ title:'反復する腹痛（虚弱児）', sub:'9歳男児。たびたびの腹痛・疲れやすさ・冷え・夜尿',
+ patient:'9歳 男児。やせ型・顔色がさえない。<br><b>主訴（保護者）：</b>「たびたびお腹（へそ周り）を痛がる。疲れやすく顔色も悪い。手足が冷たく、夜尿もある」',
+ learn:'中焦（お腹）の気血が不足し、緊張しやすい<b>虚弱体質</b>の反復性腹痛です。',
+ minKey:5,
+ questions:[
+  {q:'腹痛の様子は？',a:'へそのまわりを繰り返し痛がり、温めると楽になります。',key:true},
+  {q:'体力・疲れやすさは？',a:'疲れやすく、すぐ横になりたがります。',key:true},
+  {q:'顔色は？',a:'青白く、さえません。',key:true},
+  {q:'冷えは？',a:'手足が冷たいです。',key:true},
+  {q:'夜尿・夜泣きは？',a:'夜尿があります。',key:true},
+  {q:'食欲は？',a:'細く、たくさんは食べません。',key:true},
+  {q:'強い発熱は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','やせ型・顔色不良。舌は淡、苔は薄白。'],
+  ['舌診','淡・薄白苔。'],
+  ['聞診','声は穏やか。'],
+  ['脈診','脈は細・やや弦（虚）。'],
+  ['腹診','腹力は軟弱だが、両側の'+T('腹直筋が拘急','腹直筋が棒状に緊張する。中焦の虚＋緊張による腹痛に対応。')+'（攣急）。']
+ ],
+ tongue:{prompt:'反復するへそ周りの腹痛・疲労・冷え・腹直筋拘急・舌淡。最も合致する病態は？',
+  options:[{t:'裏の実熱の腑証',correct:false},{t:'中焦の虚（脾の気血不足）と緊張',correct:true},{t:T('瘀血',t.瘀血)+'が主体',correct:false}],
+  ok:'<b>正解。</b> 中焦（脾）の気血が不足し、お腹が緊張して反復性に痛みます。甘く温めて建て、緊張を緩めます。',
+  ng:'<b>もう一度。</b> 実熱の腑証でも瘀血でもない。舌淡・冷え・腹直筋拘急は<b>中焦の虚＋緊張</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'疲労・顔色不良・舌淡（気血の不足）／攣急性の腹痛',
+   options:[{t:T('瘀血',t.瘀血)+'が主体',correct:false},{t:T('気虚',t.気虚)+'＋'+T('血虚',t.血虚)+'（中焦の虚）',correct:true},{t:T('水滞',t.水滞)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 中焦で気血がともに不足し、お腹が緊張します。',
+   ng:'<b>再考を。</b> 瘀血や水滞ではない。中心は<b>中焦の気血不足</b>です。'},
+  {n:'② 八綱',hint:'冷え（寒）／疲労・腹力軟弱（虚）／慢性・体内（裏）',
+   options:[{t:'表・実',correct:false},{t:T('裏・虚・寒','慢性・体内で正気が不足し冷える。')+'（陰証）',correct:true},{t:'裏・実・熱',correct:false}],
+   ok:'<b>正解。</b> 慢性（裏）・虚・寒の陰証です。',
+   ng:'<b>再考を。</b> 表実でも裏実熱でもない。<b>裏・虚・寒</b>です。'},
+  {n:'③ 六病位',hint:'慢性の裏の虚（消化機能の弱り・虚弱）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:T('太陰病',t.太陰病)+'（裏の虚）／虚労',correct:true},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 裏の虚（太陰）・虚労として捉えます。',
+   ng:'<b>再考を。</b> 太陽・陽明病ではない。<b>裏の虚（太陰）</b>です。'},
+  {n:'④ 五臓',hint:'反復腹痛・疲労・顔色不良 ＝ 気血を生む臓の弱り',
+   options:[{t:T('肝',t.肝)+'の高ぶり',correct:false},{t:T('脾','脾は気血生化の源。脾の弱りで腹痛・疲労・顔色不良。')+'（気血生化）を中心',correct:true},{t:T('肺',t.肺)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 気血を生む脾の弱りが中心。脾を建てて気血を養います。',
+   ng:'<b>再考を。</b> 肝の高ぶりや肺ではない。中心は<b>脾</b>です。'}
+ ],
+ rxPrompt:'診断は「中焦の虚（脾の気血不足）・裏の虚寒」。虚弱児の反復性腹痛・疲労・冷え・夜尿。最も適した1剤は？',
+ rx:[
+  {name:'小建中湯',ok:true,html:'<b>正解 ― 小建中湯。</b> 桂枝加芍薬湯に膠飴を加える。中焦を甘く温めて建て、芍薬で攣急を緩める。虚弱児の反復性腹痛・夜尿・疲労に。'},
+  {name:'大建中湯',ok:false,html:'<b>不適。</b> 腹部の強い冷え・腹満・腸蠕動の亢進（より明らかな虚寒）に。'},
+  {name:'桂枝加芍薬湯',ok:false,html:'<b>次点。</b> 腹満・腹痛（過敏性腸など）に。著明な虚弱・疲労を伴うなら膠飴を加えた小建中湯。'},
+  {name:'六君子湯',ok:false,html:'<b>不適。</b> 食欲不振・もたれ・心下振水音の脾気虚＋水滞に。'},
+  {name:'補中益気湯',ok:false,html:'<b>不適。</b> 気虚・気の下垂・易感冒が主体のとき。'}
+ ],
+ summary:[
+  ['主な所見','反復するへそ周りの腹痛・温めて軽快／疲労・顔色不良・冷え・夜尿／舌淡・腹直筋拘急・脈細'],
+  ['① 気血水','<b>気血の不足（中焦の虚）</b>'],['② 八綱','<b>裏・虚・寒</b>（陰証）'],
+  ['③ 六病位','<b>太陰（裏の虚）／虚労</b>'],['④ 五臓','<b>脾（気血生化）</b>'],
+  ['方剤','<b>小建中湯</b>：中焦を建て、攣急を緩める。']
+ ],
+ diff:[
+  {name:'大建中湯',text:'腹部の強い冷え・腹満・腸蠕動の亢進。'},
+  {name:'桂枝加芍薬湯',text:'腹満・腹痛（過敏性腸など）。'},
+  {name:'六君子湯',text:'食欲不振・もたれ・心下振水音。'},
+  {name:'補中益気湯',text:'気虚・気の下垂・易感冒。'}
+ ],
+ caution:'膠飴を含み甘い（糖尿病では留意）。甘草を含む。'
+},
+
+{
+ id:'jht', domain:'皮膚', rxName:'十味敗毒湯',
+ title:'化膿しやすい急性湿疹', sub:'30歳女性。発赤・腫脹・痒みのある散在性の皮疹（化膿傾向）',
+ patient:'30歳 女性。<br><b>主訴：</b>「あちこちに赤くて痒いぶつぶつが出て、一部は化膿しかける。湿疹を繰り返す」患部は発赤・腫れ、滲出を伴う。',
+ learn:'風・湿・熱が皮膚（体表）にある、散在性で化膿傾向の<b>急性皮膚病変</b>です。',
+ minKey:5,
+ questions:[
+  {q:'皮疹の様子は？',a:'赤く腫れて痒く、一部は化膿しかけています。',key:true},
+  {q:'経過は？',a:'急に出て、繰り返します。',key:true},
+  {q:'範囲は？',a:'あちこちに散らばっています。',key:true},
+  {q:'分泌物は？',a:'じくじくして膿が出ることもあります。',key:true},
+  {q:'体力は？',a:'中等度です。',key:true},
+  {q:'発熱は？',a:'軽度か、ありません。',key:false},
+  {q:'強い冷えは？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','患部は発赤・腫脹。舌はやや紅、苔は薄い黄色。'],
+  ['舌診','やや紅・薄い黄苔。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は浮〜やや数。'],
+  ['腹診','腹力は中等度（特記すべき所見なし）。']
+ ],
+ tongue:{prompt:'散在する発赤・化膿傾向の皮疹・痒み・薄い黄苔。最も合致する病態は？',
+  options:[{t:'裏の虚寒',correct:false},{t:'風・湿・熱が皮膚（表）にある（皮膚の'+T('湿熱','湿と熱が結びついた病態。発赤・腫脹・滲出・化膿。')+'）',correct:true},{t:T('血虚',t.血虚)+'による乾燥',correct:false}],
+  ok:'<b>正解。</b> 発赤・腫脹・滲出・化膿傾向は、風湿熱が皮膚（体表）にある状態。去風・排膿・解毒で治します。',
+  ng:'<b>もう一度。</b> 裏の虚寒でも血虚の乾燥でもない。発赤・滲出・化膿は<b>皮膚の風湿熱</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'発赤・滲出・化膿（湿と熱が皮膚に）',
+   options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:'皮膚の'+T('湿熱','湿と熱が皮膚で結びついた状態。')+'（風湿熱）が主体',correct:true},{t:T('気虚',t.気虚)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 皮膚に湿と熱（と風）が結びついた病態です。',
+   ng:'<b>再考を。</b> 血虚や気虚ではない。中心は<b>皮膚の湿熱（風湿熱）</b>です。'},
+  {n:'② 八綱',hint:'皮膚（体表＝表）／発赤・化膿（やや実・熱）',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('表（体表）・やや実・熱','邪が体表（皮膚）にあり、熱を帯びて実寄り。')+'（湿熱）',correct:true},{t:'裏・実・熱（便秘の腑証）',correct:false}],
+   ok:'<b>正解。</b> 邪は体表（皮膚）にあり、やや実・熱（湿熱）です。',
+   ng:'<b>再考を。</b> 裏の虚寒でも裏実熱の腑証でもない。<b>表・やや実・熱（湿熱）</b>です。'},
+  {n:'③ 六病位',hint:'外症（皮膚）で、邪は体表にある',
+   options:[{t:T('少陰病',t.少陰病),correct:false},{t:'邪が体表（皮膚）にある段階（病期ではなく外症として捉える）',correct:true},{t:T('太陰病',t.太陰病),correct:false}],
+   ok:'<b>正解。</b> 六病位の病期ではなく、邪が体表（皮膚）にある外症として捉えます。',
+   ng:'<b>再考を。</b> 少陰・太陰の裏証ではない。<b>邪が体表（皮膚）にある</b>状態です。'},
+  {n:'④ 五臓',hint:'皮膚（皮毛）の病変／滲出（湿）',
+   options:[{t:T('腎',t.腎)+'の虚',correct:false},{t:T('肺','肺は皮毛を主る。')+'（皮毛）と'+T('脾','脾は湿を生む/さばく。')+'（湿）',correct:true},{t:T('肝',t.肝)+'の高ぶり',correct:false}],
+   ok:'<b>正解。</b> 皮膚（肺＝皮毛）の病変に、湿（脾）が関与します。',
+   ng:'<b>再考を。</b> 腎虚や肝の高ぶりではない。<b>肺（皮毛）＋脾（湿）</b>です。'}
+ ],
+ rxPrompt:'診断は「皮膚の風湿熱・化膿傾向の急性皮疹」。発赤・腫脹・滲出・散在性・痒み。最も適した1剤は？',
+ rx:[
+  {name:'十味敗毒湯',ok:true,html:'<b>正解 ― 十味敗毒湯。</b> 柴胡・桔梗・防風・荊芥・川芎・茯苓・独活・甘草・生姜・樸樕。去風・排膿・解毒。化膿性皮膚疾患・急性湿疹・蕁麻疹の初期に。'},
+  {name:'排膿散及湯',ok:false,html:'<b>不適。</b> すでに限局して化膿・排膿している腫れ物に。散在性の急性湿疹は十味敗毒湯。'},
+  {name:'消風散',ok:false,html:'<b>不適。</b> 分泌物が多く強い痒みの慢性湿疹（湿熱）に。急性・化膿傾向の散在疹は十味敗毒湯。'},
+  {name:'当帰飲子',ok:false,html:'<b>不適。</b> 乾燥して痒む老人性皮膚瘙痒（血虚）に。化膿・滲出の本例とは逆。'},
+  {name:'黄連解毒湯',ok:false,html:'<b>不適。</b> 強い実熱・のぼせ・出血傾向に。皮膚の去風排膿が主なら十味敗毒湯。'}
+ ],
+ summary:[
+  ['主な所見','発赤・腫脹・痒み・化膿傾向／散在性・反復性／滲出・舌やや紅薄黄苔・脈浮やや数'],
+  ['① 気血水','<b>皮膚の湿熱（風湿熱）</b>'],['② 八綱','<b>表・やや実・熱</b>（湿熱）'],
+  ['③ 六病位','邪が体表（皮膚）にある（外症）'],['④ 五臓','<b>肺（皮毛）＋脾（湿）</b>'],
+  ['方剤','<b>十味敗毒湯</b>：去風・排膿・解毒。']
+ ],
+ diff:[
+  {name:'排膿散及湯',text:'限局して化膿・排膿している腫れ物。'},
+  {name:'消風散',text:'分泌物が多く強い痒みの慢性湿疹。'},
+  {name:'当帰飲子',text:'乾燥して痒む老人性皮膚瘙痒（血虚）。'},
+  {name:'黄連解毒湯',text:'強い実熱・のぼせ・出血傾向。'}
+ ],
+ caution:'甘草を含む。'
+},
+
+{
+ id:'kss', domain:'婦人・不定愁訴', rxName:'加味逍遙散',
+ title:'のぼせ・いらいらと多彩な不調', sub:'45歳女性。のぼせ・いらいら・肩こり・不眠・疲労、症状が動揺',
+ patient:'45歳 女性。<br><b>主訴：</b>「のぼせていらいらし、肩こりや頭痛、疲れやすく寝つけない。症状は日によって変わる。月経も不順」',
+ learn:'血の不足に、肝の気のめぐりの停滞（肝鬱）と熱が加わった、女性の<b>多彩で動揺する不定愁訴</b>です。',
+ minKey:5,
+ questions:[
+  {q:'のぼせ・ほてりは？',a:'顔がのぼせて、ほてります。',key:true},
+  {q:'いらいら・気分は？',a:'いらいらし、気分が変わりやすいです。',key:true},
+  {q:'肩こり・頭痛は？',a:'肩こりと頭痛があります。',key:true},
+  {q:'疲れ・倦怠は？',a:'疲れやすいです。',key:true},
+  {q:'睡眠は？',a:'寝つきが悪いです。',key:true},
+  {q:'月経は？',a:'不順で、月経前に不調が強まります。',key:true},
+  {q:'冷え一辺倒か？',a:'のぼせる方が目立ちます。',key:false}
+ ],
+ findings:[
+  ['望診','やや疲れた表情。舌は辺縁がやや紅、苔は薄い。'],
+  ['舌診','舌辺やや紅・薄苔。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は弦・細（やや数）。'],
+  ['腹診','腹力は中等度〜やや軟。軽度の'+T('胸脇苦満',t.胸脇苦満)+'。']
+ ],
+ tongue:{prompt:'のぼせ・いらいら・症状の動揺・舌辺やや紅・脈弦細。最も合致する病態は？',
+  options:[{t:'純然たる'+T('水滞',t.水滞),correct:false},{t:T('肝鬱','肝の疏泄（気のめぐり）が滞った状態。鬱して熱を帯びるとのぼせ・いらいら。')+'＋'+T('血虚',t.血虚)+'＋熱',correct:true},{t:'裏の実寒',correct:false}],
+  ok:'<b>正解。</b> 症状が動揺し、のぼせ・いらいら（肝鬱化熱）に、疲労・舌辺紅（血虚）が重なる病態です。',
+  ng:'<b>もう一度。</b> 水滞や裏実寒ではない。動揺する不調＋のぼせ＋疲労は<b>肝鬱＋血虚＋熱</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'症状の動揺・いらいら（気滞）／疲労・舌辺紅（血虚）／のぼせ（熱）',
+   options:[{t:T('水滞',t.水滞)+'が主体',correct:false},{t:T('気滞',t.気滞)+'（肝鬱）＋'+T('血虚',t.血虚)+'＋熱',correct:true},{t:T('瘀血',t.瘀血)+'が単独で主体',correct:false}],
+   ok:'<b>正解。</b> 肝の気の停滞に血の不足と熱が重なります。',
+   ng:'<b>再考を。</b> 水滞や瘀血単独ではない。<b>気滞（肝鬱）＋血虚＋熱</b>です。'},
+  {n:'② 八綱',hint:'疲労（虚）を背景に、のぼせ・いらいら（熱）',
+   options:[{t:'表・実・寒',correct:false},{t:T('裏・虚を背景に熱','虚を伴いつつ、肝鬱が熱化してのぼせ・いらいら。')+'（虚実中間・熱寄り）',correct:true},{t:'裏・実・寒',correct:false}],
+   ok:'<b>正解。</b> 虚を伴いつつ熱（肝鬱化熱）が前に出ます。補いながら熱を冷まします。',
+   ng:'<b>再考を。</b> 表実寒でも裏実寒でもない。<b>虚を背景にした熱</b>です。'},
+  {n:'③ 六病位',hint:'外感ではなく、慢性の内傷（肝）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（'+T('肝鬱','肝の気のめぐりの停滞。')+'）で捉える',correct:true},{t:T('太陰病',t.太陰病)+'の純然たる虚寒',correct:false}],
+   ok:'<b>正解。</b> 慢性の内傷（肝鬱）として捉えます。',
+   ng:'<b>再考を。</b> 急性外感でも純然たる虚寒でもない。<b>内傷（肝鬱）</b>です。'},
+  {n:'④ 五臓',hint:'いらいら・症状動揺（疏泄の鬱）／疲労（血の生）',
+   options:[{t:T('腎',t.腎)+'の虚が単独',correct:false},{t:T('肝',t.肝)+'（疏泄の鬱）を主に'+T('脾',t.脾)+'（血の生）を伴う',correct:true},{t:T('肺',t.肺)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 肝の疏泄の鬱が中心で、脾（血を生む）を補い、熱を清します。',
+   ng:'<b>再考を。</b> 腎単独や肺ではない。中心は<b>肝（鬱）＋脾</b>です。'}
+ ],
+ rxPrompt:'診断は「肝鬱＋血虚＋熱」。中年女性ののぼせ・いらいら・肩こり・不眠・疲労・月経不順。最も適した1剤は？',
+ rx:[
+  {name:'加味逍遙散',ok:true,html:'<b>正解 ― 加味逍遙散。</b> 逍遙散（柴胡・芍薬・当帰・白朮・茯苓・甘草・薄荷・生姜）に牡丹皮・山梔子を加え熱を清す。血虚＋肝鬱＋熱の不定愁訴に。'},
+  {name:'当帰芍薬散',ok:false,html:'<b>不適。</b> 血虚＋水滞・冷え・浮腫が主で、いらいら・のぼせ（熱）が乏しいとき。'},
+  {name:'桂枝茯苓丸',ok:false,html:'<b>不適。</b> 瘀血（のぼせ足冷・下腹部の抵抗圧痛、比較的実証）が主のとき。'},
+  {name:'抑肝散',ok:false,html:'<b>不適。</b> 易怒・興奮・筋緊張（肝の高ぶり）が前景のとき。'},
+  {name:'半夏厚朴湯',ok:false,html:'<b>不適。</b> 咽喉の異物感・気滞・不安が前景のとき。'}
+ ],
+ summary:[
+  ['主な所見','のぼせ・いらいら・症状の動揺／肩こり・頭痛・不眠・疲労／月経不順・舌辺やや紅・脈弦細・軽い胸脇苦満'],
+  ['① 気血水','<b>気滞（肝鬱）＋血虚＋熱</b>'],['② 八綱','<b>虚を背景に熱</b>（虚実中間・熱寄り）'],
+  ['③ 六病位','内傷（肝鬱）'],['④ 五臓','<b>肝（疏泄の鬱）＋脾</b>'],
+  ['方剤','<b>加味逍遙散</b>：疏肝＋補血＋清熱。']
+ ],
+ diff:[
+  {name:'当帰芍薬散',text:'血虚＋水滞・冷え・浮腫（熱所見なし）。'},
+  {name:'桂枝茯苓丸',text:'瘀血（下腹部の抵抗圧痛、比較的実証）。'},
+  {name:'抑肝散',text:'易怒・興奮・筋緊張（肝の高ぶり）。'},
+  {name:'半夏厚朴湯',text:'咽喉の異物感・気滞・不安が前景。'}
+ ],
+ caution:'甘草・山梔子を含む（山梔子の長期連用で腸間膜静脈硬化症の報告）。'
+},
+
+{
+ id:'kbg', domain:'瘀血・婦人', rxName:'桂枝茯苓丸',
+ title:'月経痛とのぼせ（瘀血）', sub:'40歳女性。強い月経痛・経血の塊・のぼせて足冷・肩こり・しみ',
+ patient:'40歳 女性。体格は中等度。<br><b>主訴：</b>「月経痛が強く経血に塊が混じる。のぼせるのに足は冷える。肩こりと顔のしみも気になる」',
+ learn:'血のめぐりが停滞した<b>瘀血</b>が主体の、比較的体力のある女性の病態です。',
+ minKey:5,
+ questions:[
+  {q:'月経の様子は？',a:'痛みが強く、塊が混じり、周期も乱れがちです。',key:true},
+  {q:'のぼせと足の冷えは？',a:'顔はのぼせるのに、足は冷えます。',key:true},
+  {q:'下腹部の様子は？',a:'張って痛むことがあります。',key:true},
+  {q:'肩こり・頭痛は？',a:'肩こりと頭痛があります。',key:true},
+  {q:'皮膚は？',a:'しみ・くすみが目立ちます。',key:true},
+  {q:'体力は？',a:'中等度です。',key:true},
+  {q:'強い倦怠・貧血様は？',a:'目立ちません。',key:false}
+ ],
+ findings:[
+  ['望診','顔にしみ、口唇が暗赤。舌は'+T('暗赤','血のめぐりが滞ると舌が暗い赤〜紫になる。瘀血の所見。')+'で'+T('舌下静脈の怒張','舌の裏の静脈が太く浮く。瘀血の所見。')+'・点状の瘀斑。'],
+  ['舌診','暗赤・舌下静脈の怒張・瘀斑。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は沈・渋（とどこおる）。'],
+  ['腹診','腹力は中等度。臍傍〜左の'+T('少腹の抵抗・圧痛','下腹部の抵抗・圧痛。瘀血の代表的腹証。')+'。']
+ ],
+ tongue:{prompt:'暗赤舌・舌下静脈の怒張・月経痛と塊・下腹部の圧痛。最も合致する病態は？',
+  options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:T('瘀血',t.瘀血)+'（血のめぐりの停滞）が主体',correct:true},{t:T('水滞',t.水滞)+'が主体',correct:false}],
+  ok:'<b>正解。</b> 暗赤舌・舌下静脈の怒張・塊を伴う月経痛・下腹部の圧痛は、瘀血の典型です。',
+  ng:'<b>もう一度。</b> 血虚（淡白）でも水滞でもない。暗赤舌・塊・下腹部圧痛は<b>瘀血</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'暗赤舌・舌下静脈怒張・塊を伴う月経痛・下腹部圧痛',
+   options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:T('瘀血',t.瘀血)+'が主体',correct:true},{t:T('気虚',t.気虚)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 血のめぐりが停滞した瘀血が主体です。',
+   ng:'<b>再考を。</b> 血虚や気虚ではない。中心は<b>瘀血</b>です。'},
+  {n:'② 八綱',hint:'体力中等度・脈沈渋・下腹部の抵抗圧痛',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('実証寄り','体力は保たれ、瘀血が停滞する。')+'（瘀血の停滞）',correct:true},{t:'表・実・寒',correct:false}],
+   ok:'<b>正解。</b> 体力は保たれ、瘀血が停滞する実証寄りです。',
+   ng:'<b>再考を。</b> 虚寒でも表寒でもない。<b>実証寄り（瘀血の停滞）</b>です。'},
+  {n:'③ 六病位',hint:'外感ではなく、慢性の瘀血（内傷）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（瘀血）で捉える',correct:true},{t:T('少陰病',t.少陰病),correct:false}],
+   ok:'<b>正解。</b> 慢性の瘀血として内傷で捉えます。',
+   ng:'<b>再考を。</b> 急性熱性疾患ではない。<b>内傷（瘀血）</b>です。'},
+  {n:'④ 五臓',hint:'血の停滞・月経異常 ＝ 血を蔵し疏泄を主る臓',
+   options:[{t:T('脾',t.脾)+'の虚',correct:false},{t:T('肝',t.肝)+'（血の停滞）',correct:true},{t:T('肺',t.肺)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 血を蔵す肝の血の停滞が中心。活血化瘀で順らせます。',
+   ng:'<b>再考を。</b> 脾虚や肺ではない。中心は<b>肝（血の停滞）</b>です。'}
+ ],
+ rxPrompt:'診断は「瘀血（比較的体力中等度）」。月経痛と塊・のぼせ足冷・下腹部の抵抗圧痛。最も適した1剤は？',
+ rx:[
+  {name:'桂枝茯苓丸',ok:true,html:'<b>正解 ― 桂枝茯苓丸。</b> 桂枝・茯苓・牡丹皮・桃仁・芍薬。活血化瘀。比較的体力のある人の瘀血（月経痛・塊・のぼせ足冷・下腹部圧痛）に。'},
+  {name:'当帰芍薬散',ok:false,html:'<b>不適。</b> 血虚＋水滞・冷え・浮腫・やせ型の虚証に。瘀血所見が前景なら桂枝茯苓丸。'},
+  {name:'加味逍遙散',ok:false,html:'<b>不適。</b> 血虚＋肝鬱＋熱の不定愁訴に。明らかな瘀血腹証なら桂枝茯苓丸。'},
+  {name:'桃核承気湯',ok:false,html:'<b>次点。</b> 瘀血＋便秘・のぼせが強い実証（下腹部の急結著明）に。便秘・実が強ければ桃核承気湯。'},
+  {name:'温経湯',ok:false,html:'<b>不適。</b> 虚証で手掌煩熱・口唇乾燥を伴う月経異常に。本例は実寄りの瘀血。'}
+ ],
+ summary:[
+  ['主な所見','強い月経痛・経血の塊・周期の乱れ／のぼせて足冷・肩こり・しみ／暗赤舌・舌下静脈怒張・下腹部の抵抗圧痛'],
+  ['① 気血水','<b>瘀血</b>'],['② 八綱','<b>実証寄り</b>（瘀血の停滞）'],
+  ['③ 六病位','内傷（瘀血）'],['④ 五臓','<b>肝（血の停滞）</b>'],
+  ['方剤','<b>桂枝茯苓丸</b>：活血化瘀。']
+ ],
+ diff:[
+  {name:'当帰芍薬散',text:'血虚＋水滞・冷え・浮腫の虚証。'},
+  {name:'加味逍遙散',text:'血虚＋肝鬱＋熱の不定愁訴。'},
+  {name:'桃核承気湯',text:'瘀血＋便秘・のぼせの実証。'},
+  {name:'温経湯',text:'虚証で手掌煩熱・口唇乾燥の月経異常。'}
+ ],
+ caution:'牡丹皮・桃仁を含む。妊娠中は慎重（活血作用）。'
+},
+
+{
+ id:'tkj', domain:'瘀血・実熱', rxName:'桃核承気湯',
+ title:'月経前ののぼせ・便秘（瘀血＋実熱）', sub:'38歳女性。体格充実。月経前ののぼせ・頭痛・いらいら・便秘・下腹部痛',
+ patient:'38歳 女性。体格しっかり。<br><b>主訴：</b>「月経前にのぼせて頭痛・いらいらが強く、便秘がひどい。下腹部が張って痛む」',
+ learn:'瘀血に裏の実熱（便秘・のぼせ）が加わった、体力充実型の<b>蓄血</b>の病態です。',
+ minKey:5,
+ questions:[
+  {q:'のぼせ・頭痛は？',a:'強くのぼせて頭痛がします。',key:true},
+  {q:'お通じは？',a:'ひどい便秘です。',key:true},
+  {q:'いらいら・興奮は？',a:'月経前にいらいらが強くなります。',key:true},
+  {q:'下腹部の様子は？',a:'強く張って痛みます。',key:true},
+  {q:'月経は？',a:'塊が混じり、痛みます。',key:true},
+  {q:'体力は？',a:'充実しています。',key:true},
+  {q:'冷え・倦怠は？',a:'目立ちません。',key:false}
+ ],
+ findings:[
+  ['望診','顔が赤くのぼせる。舌は暗赤、苔は黄色く乾き、瘀斑。'],
+  ['舌診','暗赤・黄苔（乾）・瘀斑。'],
+  ['聞診','声に力がある。'],
+  ['脈診','脈は沈・実（渋）・力がある。'],
+  ['腹診','腹力は充実。左の'+T('少腹急結',t.少腹急結)+'が著明。']
+ ],
+ tongue:{prompt:'のぼせ・便秘・下腹部の急結・暗赤舌黄苔・脈実。最も合致する病態は？',
+  options:[{t:T('血虚',t.血虚)+'の虚証',correct:false},{t:T('瘀血',t.瘀血)+'＋裏の実熱（'+T('蓄血','下腹部に瘀血と熱がこもった実証。のぼせ・便秘・精神症状。')+'）',correct:true},{t:T('水滞',t.水滞)+'が主体',correct:false}],
+  ok:'<b>正解。</b> 暗赤舌・下腹部の急結（瘀血）に、便秘・のぼせ・脈実（裏の実熱）が加わる蓄血です。',
+  ng:'<b>もう一度。</b> 虚証でも水滞でもない。瘀血＋便秘・のぼせの実は<b>蓄血（瘀血＋実熱）</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'下腹部急結・暗赤舌（瘀血）／のぼせ（気逆）・便秘（実熱）',
+   options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:T('瘀血',t.瘀血)+'＋実熱（気逆を伴う）',correct:true},{t:T('水滞',t.水滞)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 瘀血に実熱・気の上衝が重なります。',
+   ng:'<b>再考を。</b> 血虚や水滞ではない。<b>瘀血＋実熱</b>です。'},
+  {n:'② 八綱',hint:'体格充実・脈実（実）／便秘・のぼせ・黄苔（熱）',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('裏・実・熱','体力充実で、裏に熱と瘀血がこもる。')+'が著明',correct:true},{t:'表・実・寒',correct:false}],
+   ok:'<b>正解。</b> 裏・実・熱が著明。瀉して熱と瘀血を下します。',
+   ng:'<b>再考を。</b> 虚寒でも表寒でもない。<b>裏・実・熱</b>です。'},
+  {n:'③ 六病位',hint:'裏の実熱に瘀血が結びつく（蓄血、陽明寄り）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'裏の実熱＋瘀血（'+T('蓄血','下腹部に瘀血と熱が結びついた実証。')+'、陽明寄り）',correct:true},{t:T('少陰病',t.少陰病),correct:false}],
+   ok:'<b>正解。</b> 裏の実熱に瘀血が結びついた蓄血（陽明寄り）です。',
+   ng:'<b>再考を。</b> 太陽・少陰ではない。<b>裏の実熱＋瘀血（蓄血）</b>です。'},
+  {n:'④ 五臓',hint:'瘀血（血の停滞）＋便秘（腑の実）',
+   options:[{t:T('脾',t.脾)+'の虚',correct:false},{t:T('肝',t.肝)+'（瘀血）＋大腸（腑の実）',correct:true},{t:T('肺',t.肺)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 肝の瘀血と腑の実（便秘）。活血と瀉下を併せます。',
+   ng:'<b>再考を。</b> 脾虚や肺ではない。<b>肝（瘀血）＋大腸（腑実）</b>です。'}
+ ],
+ rxPrompt:'診断は「瘀血＋裏の実熱（体力充実）」。のぼせ・便秘・月経前の精神症状・下腹部の急結。最も適した1剤は？',
+ rx:[
+  {name:'桃核承気湯',ok:true,html:'<b>正解 ― 桃核承気湯。</b> 桃仁・桂枝に調胃承気（大黄・芒硝・甘草）。活血化瘀＋瀉下泄熱。体力充実の瘀血＋便秘・のぼせ・月経時の精神症状に。'},
+  {name:'桂枝茯苓丸',ok:false,html:'<b>次点。</b> 同じ瘀血でも便秘・強い実熱を伴わないとき。便秘・のぼせが強ければ桃核承気湯。'},
+  {name:'加味逍遙散',ok:false,html:'<b>不適。</b> 虚を伴う肝鬱＋熱の不定愁訴に。実証・便秘が前景なら桃核承気湯。'},
+  {name:'大黄甘草湯',ok:false,html:'<b>不適。</b> 単純な便秘に。瘀血所見が前景なら桃核承気湯。'},
+  {name:'当帰芍薬散',ok:false,html:'<b>不適。</b> 虚証の血虚＋水滞に。実証の本例とは逆。'}
+ ],
+ summary:[
+  ['主な所見','強いのぼせ・頭痛・月経前のいらいら／ひどい便秘・下腹部痛／暗赤舌黄苔・少腹急結著明・脈沈実'],
+  ['① 気血水','<b>瘀血＋実熱（気逆）</b>'],['② 八綱','<b>裏・実・熱</b>が著明'],
+  ['③ 六病位','裏の実熱＋瘀血（<b>蓄血</b>）'],['④ 五臓','<b>肝（瘀血）＋大腸（腑実）</b>'],
+  ['方剤','<b>桃核承気湯</b>：活血化瘀＋瀉下泄熱。']
+ ],
+ diff:[
+  {name:'桂枝茯苓丸',text:'瘀血だが便秘・強い実熱を伴わない。'},
+  {name:'加味逍遙散',text:'虚を伴う肝鬱＋熱の不定愁訴。'},
+  {name:'大黄甘草湯',text:'単純な便秘。'},
+  {name:'当帰芍薬散',text:'虚証の血虚＋水滞。'}
+ ],
+ caution:'大黄・芒硝（瀉下）・桂枝・甘草を含む。妊娠中は禁忌的（活血・瀉下）。'
+},
+
+{
+ id:'rmg', domain:'腎虚', rxName:'六味丸',
+ title:'腰膝のだるさとほてり（腎陰虚）', sub:'60歳男性。腰膝のだるさ・手足のほてり・口渇・寝汗（冷えなし）',
+ patient:'60歳 男性。<br><b>主訴：</b>「腰や膝がだるく力が入らない。手足がほてり、口が渇いて寝汗をかく。トイレが近い」冷えは目立たない。',
+ learn:'体を潤す腎の陰液が不足した<b>腎陰虚</b>（冷えのない腎虚）です。',
+ minKey:5,
+ questions:[
+  {q:'腰や膝の様子は？',a:'だるく、力が入りません。',key:true},
+  {q:'ほてり・寝汗は？',a:'手足がほてり、寝汗をかきます。',key:true},
+  {q:'口の渇きは？',a:'渇きます。',key:true},
+  {q:'排尿は？',a:'近く、乾いた感じがあります。',key:true},
+  {q:'冷えはある？',a:'冷えは目立たず、むしろほてります。',key:true},
+  {q:'疲労は？',a:'疲れやすいです。',key:true},
+  {q:'強い悪寒は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','やや痩せ。舌は紅、苔は少なく乾く。'],
+  ['舌診','紅・少苔（乾）。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は沈・細・数。'],
+  ['腹診','腹力は中等度〜やや軟。臍下（腎間）の力にやや乏しい。']
+ ],
+ tongue:{prompt:'腰膝のだるさ・ほてり・寝汗・口渇・舌紅少苔・脈細数。最も合致する病態は？',
+  options:[{t:T('腎','腎は精・成長生殖・水を主る。')+'陽虚（冷え）',correct:false},{t:'腎'+T('陰虚','体を潤す陰液の不足。ほてり・寝汗・口渇・舌紅少苔。')+'（うるおい不足・虚熱）',correct:true},{t:'実熱',correct:false}],
+  ok:'<b>正解。</b> 冷えがなくほてり・寝汗・口渇・舌紅少苔は、腎の陰液（うるおい）不足＝腎陰虚です。',
+  ng:'<b>もう一度。</b> 腎陽虚なら冷え、実熱なら充実。ほてり・口渇・舌紅少苔は<b>腎陰虚</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'ほてり・寝汗・口渇・舌紅少苔（うるおい不足）',
+   options:[{t:T('水滞',t.水滞)+'が主体',correct:false},{t:T('陰虚','陰液＝うるおい（津液）の不足。')+'（津液の不足）が主体',correct:true},{t:T('気虚',t.気虚)+'が主体',correct:false}],
+   ok:'<b>正解。</b> うるおい（陰液）の不足が主体です。',
+   ng:'<b>再考を。</b> 水滞や気虚ではない。中心は<b>陰虚（うるおい不足）</b>です。'},
+  {n:'② 八綱',hint:'うるおい不足で内に熱がこもる／慢性・体内',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('裏・虚・熱','陰液不足で相対的に熱がこもる（虚熱）。')+'（虚熱）',correct:true},{t:'表・実',correct:false}],
+   ok:'<b>正解。</b> うるおい不足で相対的に熱がこもる虚熱です。',
+   ng:'<b>再考を。</b> 虚寒でも表証でもない。<b>裏・虚・熱（虚熱）</b>です。'},
+  {n:'③ 六病位',hint:'外感ではなく、慢性の腎の弱り',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（腎陰虚）で捉える',correct:true},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 慢性の腎陰虚として内傷で捉えます。',
+   ng:'<b>再考を。</b> 急性熱性疾患ではない。<b>内傷（腎陰虚）</b>です。'},
+  {n:'④ 五臓',hint:'腰膝のだるさ・寝汗・ほてり ＝ 精と水を主る臓の陰の不足',
+   options:[{t:T('脾',t.脾)+'の陽虚',correct:false},{t:T('腎',t.腎)+'（陰）の不足',correct:true},{t:T('肺',t.肺)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 腎の陰（うるおい）の不足が中心。補腎陰で潤します。',
+   ng:'<b>再考を。</b> 脾陽虚や肺ではない。中心は<b>腎（陰）の不足</b>です。'}
+ ],
+ rxPrompt:'診断は「腎陰虚（冷えなし）」。腰膝のだるさ・ほてり・寝汗・口渇・舌紅少苔。最も適した1剤は？',
+ rx:[
+  {name:'六味丸',ok:true,html:'<b>正解 ― 六味丸（六味地黄丸）。</b> 地黄・山茱萸・山薬・沢瀉・茯苓・牡丹皮。補腎陰（三補三瀉）。冷えのない腎陰虚（ほてり・腰膝・口渇・寝汗）に。'},
+  {name:'八味地黄丸',ok:false,html:'<b>不適。</b> 腎陽虚（冷え・夜間頻尿・下肢の冷え）を伴うとき。本例はほてりが主で附子・桂皮は不要。'},
+  {name:'牛車腎気丸',ok:false,html:'<b>不適。</b> 腎陽虚＋下肢痛・しびれ・浮腫のとき。'},
+  {name:'知柏地黄丸',ok:false,html:'<b>次点。</b> 陰虚火旺がより強い（強いほてり・盗汗）とき。基本は六味丸。'},
+  {name:'当帰芍薬散',ok:false,html:'<b>不適。</b> 血虚＋水滞の婦人に。腎陰虚とは別。'}
+ ],
+ summary:[
+  ['主な所見','腰膝のだるさ・脱力／手足のほてり・寝汗・口渇／冷えなし・舌紅少苔・脈沈細数'],
+  ['① 気血水','<b>陰虚（津液の不足）</b>'],['② 八綱','<b>裏・虚・熱</b>（虚熱）'],
+  ['③ 六病位','内傷（腎陰虚）'],['④ 五臓','<b>腎（陰）の不足</b>'],
+  ['方剤','<b>六味丸</b>：補腎陰（三補三瀉）。']
+ ],
+ diff:[
+  {name:'八味地黄丸',text:'腎陽虚（冷え・夜間頻尿）を伴う。'},
+  {name:'牛車腎気丸',text:'腎陽虚＋下肢痛・しびれ・浮腫。'},
+  {name:'知柏地黄丸',text:'陰虚火旺が強い（強いほてり・盗汗）。'},
+  {name:'当帰芍薬散',text:'血虚＋水滞の婦人。'}
+ ],
+ caution:'地黄を含み、胃もたれ・軟便が出ることがある。'
+},
+
+{
+ id:'hdg', domain:'腎虚', rxName:'八味地黄丸',
+ title:'下肢の冷えと夜間頻尿（腎陽虚）', sub:'68歳男性。腰のだるさ・下肢の冷え・夜間頻尿・下半身の脱力',
+ patient:'68歳 男性。<br><b>主訴：</b>「腰が重だるく下肢が冷える。夜に何度もトイレに起き、下半身に力が入らない。口は渇く」温めると楽。',
+ learn:'体を温める腎の陽気が不足した<b>腎陽虚</b>です。腎陰虚との違いに注目します。',
+ minKey:5,
+ questions:[
+  {q:'腰や下肢の様子は？',a:'だるく冷え、力が入りません。',key:true},
+  {q:'夜間のトイレは？',a:'何度も起きます。',key:true},
+  {q:'冷えと温めると？',a:'下半身が冷え、温めると楽です。',key:true},
+  {q:'疲労は？',a:'疲れやすいです。',key:true},
+  {q:'口の渇きは？',a:'渇くこともあります。',key:true},
+  {q:'下腹部の様子は？',a:'力が抜けた感じ（小腹不仁）があります。',key:true},
+  {q:'強いのぼせ・実熱は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','舌は淡（やや胖大）、苔は白く湿る。'],
+  ['舌診','淡・やや胖大・白苔（湿）。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は沈・弱（尺位が弱い）。'],
+  ['腹診','腹力は軟弱。'+T('臍下不仁','臍より下の腹部に力がなく軟弱な所見（小腹不仁）。腎虚に対応する。')+'、下肢の冷感。']
+ ],
+ tongue:{prompt:'下肢の冷え・夜間頻尿・腰のだるさ・臍下不仁・脈沈で尺弱。最も合致する病態は？',
+  options:[{t:'腎陰虚（ほてり）',correct:false},{t:'腎'+T('陽虚','体を温める腎の陽気の不足。冷え・夜間頻尿・下肢脱力。')+'（温煦・気化の低下）',correct:true},{t:'実熱',correct:false}],
+  ok:'<b>正解。</b> 冷え・夜間頻尿・臍下不仁・脈沈尺弱は、腎の陽気の不足＝腎陽虚です。',
+  ng:'<b>もう一度。</b> ほてりの腎陰虚でも実熱でもない。冷え・夜間頻尿・臍下不仁は<b>腎陽虚</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'下肢の冷え・夜間頻尿・脱力（温める力の不足）',
+   options:[{t:T('瘀血',t.瘀血)+'が主体',correct:false},{t:'腎の'+T('陽虚','陽気＝温める力の不足。')+'（気・陽の不足）',correct:true},{t:'実熱',correct:false}],
+   ok:'<b>正解。</b> 体を温める腎陽の不足が主体です。',
+   ng:'<b>再考を。</b> 瘀血や実熱ではない。<b>腎の陽虚</b>です。'},
+  {n:'② 八綱',hint:'下肢の冷え（寒）／脱力・脈沈尺弱（虚）／慢性・体内（裏）',
+   options:[{t:'裏・実・熱',correct:false},{t:T('裏・虚・寒','体内で正気（陽）が不足し冷える。')+'',correct:true},{t:'表・実',correct:false}],
+   ok:'<b>正解。</b> 裏・虚・寒です。補って温めます。',
+   ng:'<b>再考を。</b> 裏実熱でも表証でもない。<b>裏・虚・寒</b>です。'},
+  {n:'③ 六病位',hint:'外感ではなく、慢性の腎の弱り',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（腎陽虚）で捉える',correct:true},{t:T('少陽病',t.少陽病),correct:false}],
+   ok:'<b>正解。</b> 慢性の腎陽虚として内傷で捉えます。',
+   ng:'<b>再考を。</b> 太陽・少陽病ではない。<b>内傷（腎陽虚）</b>です。'},
+  {n:'④ 五臓',hint:'下肢の冷え・夜間頻尿・腰のだるさ ＝ 温煦と気化を主る臓',
+   options:[{t:T('肝',t.肝)+'の高ぶり',correct:false},{t:T('腎',t.腎)+'（陽）の不足',correct:true},{t:T('肺',t.肺)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 腎の陽（温煦・気化）の不足が中心。補腎＋温陽で治します。',
+   ng:'<b>再考を。</b> 肝や肺ではない。中心は<b>腎（陽）の不足</b>です。'}
+ ],
+ rxPrompt:'診断は「腎陽虚」。下肢の冷え・腰のだるさ・夜間頻尿・下半身の脱力・臍下不仁。最も適した1剤は？',
+ rx:[
+  {name:'八味地黄丸',ok:true,html:'<b>正解 ― 八味地黄丸。</b> 六味丸に附子・桂皮を加える。補腎＋温陽。腎陽虚（下肢の冷え・腰痛・夜間頻尿・下半身脱力）に。'},
+  {name:'六味丸',ok:false,html:'<b>不適。</b> 冷えがなくほてり・口渇主体の腎陰虚に。冷え・夜間頻尿が主なら八味地黄丸。'},
+  {name:'牛車腎気丸',ok:false,html:'<b>次点。</b> 八味地黄丸の適応に加え、下肢の痛み・しびれ・浮腫が目立つとき。'},
+  {name:'真武湯',ok:false,html:'<b>不適。</b> 全身の陽虚＋水滞（めまい・水様便・浮腫・脈沈微）が前景のとき。'},
+  {name:'補中益気湯',ok:false,html:'<b>不適。</b> 気虚・気の下垂・易感冒が主体のとき。'}
+ ],
+ summary:[
+  ['主な所見','腰のだるさ・下肢の冷えと脱力／夜間頻尿・温めて軽快／舌淡胖大・臍下不仁・脈沈尺弱'],
+  ['① 気血水','<b>腎の陽虚（気・陽の不足）</b>'],['② 八綱','<b>裏・虚・寒</b>'],
+  ['③ 六病位','内傷（腎陽虚）'],['④ 五臓','<b>腎（陽）の不足</b>'],
+  ['方剤','<b>八味地黄丸</b>：補腎＋温陽。']
+ ],
+ diff:[
+  {name:'六味丸',text:'冷えなし・ほてり主体の腎陰虚。'},
+  {name:'牛車腎気丸',text:'腎陽虚＋下肢痛・しびれ・浮腫。'},
+  {name:'真武湯',text:'全身の陽虚＋水滞（めまい・水様便）。'},
+  {name:'補中益気湯',text:'気虚・気の下垂・易感冒。'}
+ ],
+ caution:'附子（アコニチン）・地黄（胃もたれ）・桂皮を含む。のぼせ・胃腸虚弱では不向きのことも。'
+},
+
+{
+ id:'gjg', domain:'腎虚・下肢症状', rxName:'牛車腎気丸',
+ title:'下肢のしびれ・痛みと夜間頻尿', sub:'72歳男性・糖尿病。下肢のしびれ・痛み・むくみ・腰の冷え・夜間頻尿',
+ patient:'72歳 男性。糖尿病で通院。<br><b>主訴：</b>「下肢がしびれて痛み、むくむ。夜に何度もトイレ。腰が冷えてだるい」温めると楽。',
+ learn:'腎陽虚に、下肢の痛み・しびれ・むくみ（水滞）が加わった病態です。',
+ minKey:5,
+ questions:[
+  {q:'下肢の様子は？',a:'しびれと痛みがあり、むくみます。',key:true},
+  {q:'夜間のトイレは？',a:'何度も起きます。',key:true},
+  {q:'腰・冷えは？',a:'腰が冷えてだるいです。',key:true},
+  {q:'疲労は？',a:'疲れやすいです。',key:true},
+  {q:'温めると？',a:'楽になります。',key:true},
+  {q:'既往は？',a:'糖尿病があります。',key:true},
+  {q:'強いのぼせは？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','舌は淡・胖大、苔は白い。'],
+  ['舌診','淡・胖大・白苔。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は沈・弱。'],
+  ['腹診','腹力は軟弱。'+T('臍下不仁','臍より下の腹部に力がない。腎虚の所見。')+'、下肢の冷感・浮腫。']
+ ],
+ tongue:{prompt:'下肢のしびれ・痛み・むくみ・夜間頻尿・腰の冷え。最も合致する病態は？',
+  options:[{t:'腎陰虚（ほてり）',correct:false},{t:'腎'+T('陽虚','温める力の不足。')+'＋'+T('水滞',t.水滞)+'（下肢）',correct:true},{t:'実熱',correct:false}],
+  ok:'<b>正解。</b> 腎陽虚（冷え・夜間頻尿・腰のだるさ）に、下肢の水滞（しびれ・痛み・むくみ）が加わります。',
+  ng:'<b>もう一度。</b> 腎陰虚でも実熱でもない。冷え・夜間頻尿＋下肢のしびれ浮腫は<b>腎陽虚＋水滞</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'冷え・夜間頻尿（腎陽の不足）／下肢のしびれ・むくみ（水滞）',
+   options:[{t:T('瘀血',t.瘀血)+'が主体',correct:false},{t:'腎の陽虚＋'+T('水滞',t.水滞),correct:true},{t:'実熱',correct:false}],
+   ok:'<b>正解。</b> 腎陽の不足に下肢の水滞が重なります。',
+   ng:'<b>再考を。</b> 瘀血や実熱ではない。<b>腎陽虚＋水滞</b>です。'},
+  {n:'② 八綱',hint:'冷え（寒）／脱力・脈沈弱（虚）／慢性・体内（裏）',
+   options:[{t:'裏・実・熱',correct:false},{t:T('裏・虚・寒','体内で陽が不足し冷える。')+'',correct:true},{t:'表・実',correct:false}],
+   ok:'<b>正解。</b> 裏・虚・寒です。',
+   ng:'<b>再考を。</b> 裏実熱でも表証でもない。<b>裏・虚・寒</b>です。'},
+  {n:'③ 六病位',hint:'外感ではなく、慢性の腎の弱り',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（腎陽虚）で捉える',correct:true},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 慢性の腎陽虚として内傷で捉えます。',
+   ng:'<b>再考を。</b> 急性熱性疾患ではない。<b>内傷（腎陽虚）</b>です。'},
+  {n:'④ 五臓',hint:'下肢の冷え・しびれ・むくみ・夜間頻尿 ＝ 温煦と水液を主る臓',
+   options:[{t:T('肝',t.肝)+'の高ぶり',correct:false},{t:T('腎',t.腎)+'（陽）＋水液代謝',correct:true},{t:T('肺',t.肺)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 腎の陽（温煦・気化）の不足に水のさばきの低下が加わります。',
+   ng:'<b>再考を。</b> 肝や肺ではない。中心は<b>腎（陽）＋水液代謝</b>です。'}
+ ],
+ rxPrompt:'診断は「腎陽虚＋下肢の水滞」。下肢のしびれ・痛み・むくみ・夜間頻尿・腰の冷え。最も適した1剤は？',
+ rx:[
+  {name:'牛車腎気丸',ok:true,html:'<b>正解 ― 牛車腎気丸。</b> 八味地黄丸に牛膝・車前子を加える。補腎温陽＋利水・下肢の血行と痛み/しびれに。腎陽虚＋下肢痛・しびれ・浮腫・夜間頻尿に。'},
+  {name:'八味地黄丸',ok:false,html:'<b>次点。</b> 下肢の痛み・しびれ・浮腫が目立たない腎陽虚に。下肢症状が前景なら牛車腎気丸。'},
+  {name:'六味丸',ok:false,html:'<b>不適。</b> 冷えのない腎陰虚（ほてり）に。'},
+  {name:'疎経活血湯',ok:false,html:'<b>不適。</b> 瘀血＋風湿による下肢痛（夜間痛）に。腎虚・冷え・夜間頻尿が主なら牛車腎気丸。'},
+  {name:'真武湯',ok:false,html:'<b>不適。</b> 全身の陽虚＋水滞・めまい・水様便のとき。'}
+ ],
+ summary:[
+  ['主な所見','下肢のしびれ・痛み・むくみ／夜間頻尿・腰の冷え・温めて軽快／舌淡胖大・臍下不仁・脈沈弱'],
+  ['① 気血水','<b>腎の陽虚＋水滞</b>'],['② 八綱','<b>裏・虚・寒</b>'],
+  ['③ 六病位','内傷（腎陽虚）'],['④ 五臓','<b>腎（陽）＋水液代謝</b>'],
+  ['方剤','<b>牛車腎気丸</b>：補腎温陽＋利水。']
+ ],
+ diff:[
+  {name:'八味地黄丸',text:'下肢の痛み・しびれ・浮腫が目立たない腎陽虚。'},
+  {name:'六味丸',text:'冷えのない腎陰虚（ほてり）。'},
+  {name:'疎経活血湯',text:'瘀血＋風湿による下肢痛（夜間痛）。'},
+  {name:'真武湯',text:'全身の陽虚＋水滞（めまい・水様便）。'}
+ ],
+ caution:'附子・地黄を含む。胃もたれ・のぼせに注意。'
+},
+
+{
+ id:'hkt', domain:'精神・咽喉', rxName:'半夏厚朴湯',
+ title:'のどのつかえと気分の塞ぎ', sub:'40歳女性。咽喉の異物感・抑うつ・不安・動悸（ストレスで悪化）',
+ patient:'40歳 女性。<br><b>主訴：</b>「のどに何か詰まった感じが取れない（吐いても飲んでも消えない）。気分が塞ぎ不安で、ときに動悸・吐き気」ストレスで悪化。',
+ learn:'気のめぐりが滞り、痰を伴った<b>気滞</b>（梅核気）の病態です。',
+ minKey:5,
+ questions:[
+  {q:'のどの感じは？',a:'何かが詰まった異物感があり、飲んでも吐いても取れません。',key:true},
+  {q:'気分は？',a:'塞いで不安です。',key:true},
+  {q:'悪化の誘因は？',a:'ストレスで強まります。',key:true},
+  {q:'動悸・吐き気は？',a:'ときにあります。',key:true},
+  {q:'胸のつかえは？',a:'胸〜みぞおちがつかえます。',key:true},
+  {q:'痰は？',a:'少しからみます。',key:true},
+  {q:'強い冷え・便秘は？',a:'特にありません。',key:false}
+ ],
+ findings:[
+  ['望診','舌は淡紅、苔は白くやや湿る。'],
+  ['舌診','淡紅・白苔（やや湿）。'],
+  ['聞診','ため息が多い。'],
+  ['脈診','脈は弦（滑）。'],
+  ['腹診','腹力は中等度。心下〜胸のつかえ感。']
+ ],
+ tongue:{prompt:'咽喉の異物感・気分の塞ぎ・ストレスで悪化・脈弦。最も合致する病態は？',
+  options:[{t:T('陰虚',t.陰虚)+'の乾燥',correct:false},{t:T('気滞',t.気滞)+'＋痰（'+T('梅核気','のどに梅の種が詰まったような異物感。気滞と痰による。')+'）',correct:true},{t:'裏の実熱',correct:false}],
+  ok:'<b>正解。</b> ストレスで悪化する咽喉異物感・脈弦は、気のめぐりの停滞に痰が絡んだ梅核気です。',
+  ng:'<b>もう一度。</b> 陰虚の乾燥でも裏実熱でもない。咽喉異物感・気の塞ぎは<b>気滞＋痰（梅核気）</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'のどの異物感・気の塞ぎ（気滞）／痰がからむ（水）',
+   options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:T('気滞',t.気滞)+'（＋痰＝水）',correct:true},{t:T('瘀血',t.瘀血)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 気の停滞に痰が絡みます。理気・化痰で治します。',
+   ng:'<b>再考を。</b> 血虚や瘀血ではない。中心は<b>気滞（＋痰）</b>です。'},
+  {n:'② 八綱',hint:'寒熱・虚実に大きく偏らない気の鬱滞（裏）',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('裏の気鬱','寒熱・虚実に大きく偏らない気の停滞。')+'（中間証）',correct:true},{t:'裏・実・熱',correct:false}],
+   ok:'<b>正解。</b> 寒熱・虚実に大きく偏らない気の鬱滞（裏）です。',
+   ng:'<b>再考を。</b> 虚寒でも実熱でもない。<b>裏の気鬱（中間証）</b>です。'},
+  {n:'③ 六病位',hint:'外感ではなく、慢性の気の停滞（内傷）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（気滞）で捉える',correct:true},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 慢性の気滞として内傷で捉えます。',
+   ng:'<b>再考を。</b> 急性外感ではない。<b>内傷（気滞）</b>です。'},
+  {n:'④ 五臓',hint:'気の塞ぎ（疏泄の鬱）／のど・胸のつかえ・吐き気（気の上逆）',
+   options:[{t:T('腎',t.腎)+'の虚',correct:false},{t:T('肝',t.肝)+'（気鬱）に'+T('肺',t.肺)+'胃（気の上逆）を伴う',correct:true},{t:T('脾',t.脾)+'の陽虚',correct:false}],
+   ok:'<b>正解。</b> 肝の気鬱に、肺胃の気の上逆（のど・胸のつかえ・吐き気）を伴います。',
+   ng:'<b>再考を。</b> 腎虚や脾陽虚ではない。<b>肝（気鬱）＋肺胃</b>です。'}
+ ],
+ rxPrompt:'診断は「気滞＋痰（梅核気）」。咽喉の異物感・気分の塞ぎ・不安・動悸。最も適した1剤は？',
+ rx:[
+  {name:'半夏厚朴湯',ok:true,html:'<b>正解 ― 半夏厚朴湯。</b> 半夏・厚朴・茯苓・蘇葉・生姜。理気・化痰・降逆。咽喉の異物感（梅核気）・気の塞ぎ・不安・動悸に。'},
+  {name:'加味逍遙散',ok:false,html:'<b>不適。</b> 血虚＋肝鬱＋熱の不定愁訴（のぼせ・いらいら）が前景のとき。'},
+  {name:'麦門冬湯',ok:false,html:'<b>不適。</b> 肺の陰虚・燥の乾いた咳・咽の乾きに。異物感・気滞の本例とは別。'},
+  {name:'柴朴湯',ok:false,html:'<b>次点。</b> 半夏厚朴湯＋小柴胡湯。胸脇苦満を伴い気管支炎・喘息様の咳・痰を伴うとき。'},
+  {name:'香蘇散',ok:false,html:'<b>不適。</b> 軽い気鬱・胃腸虚弱の感冒に。咽喉異物感が主なら半夏厚朴湯。'}
+ ],
+ summary:[
+  ['主な所見','咽喉の異物感（梅核気）・気分の塞ぎ・不安／ストレスで悪化・動悸・吐き気／脈弦・心下のつかえ'],
+  ['① 気血水','<b>気滞（＋痰）</b>'],['② 八綱','<b>裏の気鬱</b>（中間証）'],
+  ['③ 六病位','内傷（気滞）'],['④ 五臓','<b>肝（気鬱）＋肺胃</b>'],
+  ['方剤','<b>半夏厚朴湯</b>：理気・化痰・降逆。']
+ ],
+ diff:[
+  {name:'加味逍遙散',text:'血虚＋肝鬱＋熱の不定愁訴が前景。'},
+  {name:'麦門冬湯',text:'肺の陰虚・燥の乾いた咳・咽乾。'},
+  {name:'柴朴湯',text:'胸脇苦満を伴う気管支炎・喘息様。'},
+  {name:'香蘇散',text:'軽い気鬱・胃腸虚弱の感冒。'}
+ ],
+ caution:'比較的安全（甘草を含まない）。器質的疾患の除外も大切。'
+},
+
+{
+ id:'sck', domain:'循環器（高血圧随伴）', rxName:'七物降下湯',
+ title:'のぼせ・頭重を伴う高血圧傾向', sub:'58歳男性。拡張期高血圧・のぼせ・肩こり・耳鳴り・疲労（顔色不良）',
+ patient:'58歳 男性。<br><b>主訴：</b>「血圧が高め（特に下が高い）。のぼせ・肩こり・頭重・耳鳴りがあり、疲れやすく顔色もさえない」',
+ learn:'血の不足を背景に、のぼせ・頭重をきたす<b>虚証の高血圧随伴症状</b>です。',
+ minKey:5,
+ questions:[
+  {q:'血圧は？',a:'高めで、特に下（拡張期）が高いです。',key:true},
+  {q:'のぼせ・頭重は？',a:'のぼせて頭が重いです。',key:true},
+  {q:'肩こり・耳鳴りは？',a:'肩こりと耳鳴りがあります。',key:true},
+  {q:'疲労・顔色は？',a:'疲れやすく、顔色がさえません。',key:true},
+  {q:'めまいは？',a:'ときにふらつきます。',key:true},
+  {q:'冷えのぼせは？',a:'のぼせる一方、下半身は冷えがちです。',key:true},
+  {q:'強い便秘・実熱は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','やや疲れた顔色。舌は淡（血虚）、苔は薄い。'],
+  ['舌診','淡（血虚）・薄苔。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は沈・細（やや弦）。'],
+  ['腹診','腹力は中等度〜やや軟。']
+ ],
+ tongue:{prompt:'拡張期高血圧・のぼせ頭重・疲労と顔色不良・舌淡。最も合致する病態は？',
+  options:[{t:'実熱（肝陽上亢の実）',correct:false},{t:T('血虚',t.血虚)+'を背景にした、のぼせ（上の熱感）＝虚証の高血圧随伴症状',correct:true},{t:'裏の実寒',correct:false}],
+  ok:'<b>正解。</b> 疲労・顔色不良・舌淡（血虚）を背景に、のぼせ・頭重が出る虚証の高血圧随伴症状です。',
+  ng:'<b>もう一度。</b> 実熱でも裏実寒でもない。疲労・舌淡＋のぼせは<b>血虚を背景にした虚証</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'疲労・顔色不良・舌淡（血虚）／のぼせ・頭重（上に向かう）',
+   options:[{t:T('水滞',t.水滞)+'が主体',correct:false},{t:T('血虚',t.血虚)+'を背景に、のぼせ（軽い気の上衝）',correct:true},{t:T('瘀血',t.瘀血)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 血の不足を背景に、のぼせ・頭重が出ます。補血しつつ鎮めます。',
+   ng:'<b>再考を。</b> 水滞や瘀血が主ではない。中心は<b>血虚＋のぼせ</b>です。'},
+  {n:'② 八綱',hint:'疲労・顔色不良（虚）を背景に、のぼせ（上の熱感）',
+   options:[{t:'表・実',correct:false},{t:T('裏・虚を背景にのぼせ','虚を伴いつつ、のぼせ・頭重を呈する。')+'（虚証寄り）',correct:true},{t:'裏・実・熱',correct:false}],
+   ok:'<b>正解。</b> 虚を伴う（虚証寄り）うえでのぼせが出ます。',
+   ng:'<b>再考を。</b> 表実でも裏実熱でもない。<b>虚を背景にしたのぼせ</b>です。'},
+  {n:'③ 六病位',hint:'外感ではなく、慢性の内傷（血虚・腎の弱り）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外感の病期でなく、内傷（血虚・腎の弱り）で捉える',correct:true},{t:T('少陽病',t.少陽病),correct:false}],
+   ok:'<b>正解。</b> 慢性の内傷（血虚・腎の弱り）として捉えます。',
+   ng:'<b>再考を。</b> 急性外感ではない。<b>内傷（血虚）</b>です。'},
+  {n:'④ 五臓',hint:'のぼせ・耳鳴り・頭重／疲労・顔色不良（血の不足）',
+   options:[{t:T('脾',t.脾)+'の陽虚',correct:false},{t:T('肝',t.肝)+'腎の陰血の不足',correct:true},{t:T('肺',t.肺)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 肝腎の陰血の不足を背景に、のぼせ・耳鳴り・頭重が出ます。',
+   ng:'<b>再考を。</b> 脾陽虚や肺ではない。中心は<b>肝腎の陰血の不足</b>です。'}
+ ],
+ rxPrompt:'診断は「血虚を背景にした虚証の高血圧随伴症状」。拡張期高血圧・のぼせ・頭重・肩こり・疲労。最も適した1剤は？',
+ rx:[
+  {name:'七物降下湯',ok:true,html:'<b>正解 ― 七物降下湯。</b> 四物湯（当帰・芍薬・川芎・地黄）に黄耆・黄柏・釣藤鈎。血を補い、のぼせ・頭重を鎮める。体力中等度以下の（拡張期）高血圧随伴症状に。'},
+  {name:'釣藤散',ok:false,html:'<b>不適。</b> 中年以降の慢性頭痛・めまい・朝の頭重（気虚＋肝陽）に。血虚が前景なら七物降下湯。'},
+  {name:'黄連解毒湯',ok:false,html:'<b>不適。</b> 体力のある人の実熱・のぼせ・顔面紅潮に。虚証の本例には強すぎる。'},
+  {name:'大柴胡湯',ok:false,html:'<b>不適。</b> 実証・胸脇苦満・便秘を伴う高血圧傾向に。'},
+  {name:'八味地黄丸',ok:false,html:'<b>不適。</b> 腎陽虚（冷え・夜間頻尿）が主体のとき。'}
+ ],
+ summary:[
+  ['主な所見','拡張期高血圧・のぼせ・頭重／肩こり・耳鳴り・めまい／疲労・顔色不良・舌淡・脈沈細'],
+  ['① 気血水','<b>血虚＋のぼせ（軽い気の上衝）</b>'],['② 八綱','<b>虚を背景にのぼせ</b>（虚証寄り）'],
+  ['③ 六病位','内傷（血虚・腎の弱り）'],['④ 五臓','<b>肝腎の陰血の不足</b>'],
+  ['方剤','<b>七物降下湯</b>：補血＋のぼせ・頭重を鎮める。']
+ ],
+ diff:[
+  {name:'釣藤散',text:'慢性頭痛・めまい・朝の頭重（気虚＋肝陽）。'},
+  {name:'黄連解毒湯',text:'体力ありの実熱・のぼせ・顔面紅潮。'},
+  {name:'大柴胡湯',text:'実証・胸脇苦満・便秘の高血圧傾向。'},
+  {name:'八味地黄丸',text:'腎陽虚（冷え・夜間頻尿）主体。'}
+ ],
+ caution:'地黄で胃もたれ。降圧薬の補助であり、降圧薬の代替ではない。血圧管理は主治医と。'
+},
+
+{
+ id:'dst', domain:'消化器・実証', rxName:'大柴胡湯',
+ title:'季肋部の張りと便秘（実証）', sub:'52歳男性。肥満傾向。胸脇苦満・便秘・口苦・上腹部のつかえ',
+ patient:'52歳 男性。がっしり・肥満傾向。<br><b>主訴：</b>「みぞおち〜わき腹が張って苦しい。便秘で口が苦く、食後の上腹部の不快がある」いらいらしやすい。',
+ learn:'少陽の鬱熱に陽明の裏実（便秘・上腹部の張り）が加わった、<b>体力充実型</b>の病態です。',
+ minKey:5,
+ questions:[
+  {q:'季肋部の様子は？',a:'みぞおち〜わき腹が強く張って苦しいです。',key:true},
+  {q:'お通じは？',a:'便秘です。',key:true},
+  {q:'口の苦みは？',a:'口が苦いです。',key:true},
+  {q:'いらいらは？',a:'いらいらしやすいです。',key:true},
+  {q:'上腹部の様子は？',a:'張って、つかえます。',key:true},
+  {q:'体力・体格は？',a:'体力は充実、肥満傾向です。',key:true},
+  {q:'強い冷え・倦怠は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','充実した体格。舌はやや紅、苔は黄色く乾く。'],
+  ['舌診','やや紅・黄苔（乾）。'],
+  ['聞診','声に力がある。'],
+  ['脈診','脈は弦・実（力がある）。'],
+  ['腹診','腹力は充実。'+T('胸脇苦満',t.胸脇苦満)+'（強）、心下急（心下部の抵抗）。']
+ ],
+ tongue:{prompt:'強い胸脇苦満・便秘・口苦・脈弦実・黄苔。最も合致する病態は？',
+  options:[{t:'純然たる裏の虚寒',correct:false},{t:T('少陽の鬱熱','半表半裏に熱がこもる。')+'＋'+T('陽明の裏実','便秘・腹満など裏に実熱がこもる。')+'（少陽陽明）',correct:true},{t:T('血虚',t.血虚)+'が主体',correct:false}],
+  ok:'<b>正解。</b> 強い胸脇苦満（少陽）に便秘・上腹部の張り（陽明の裏実）が加わる、少陽陽明の合した実証です。',
+  ng:'<b>もう一度。</b> 虚寒でも血虚でもない。胸脇苦満＋便秘＋脈弦実は<b>少陽の鬱熱＋陽明の裏実</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'季肋部の張り（気の鬱滞）／便秘・黄苔（裏の熱・実）',
+   options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:'気の鬱滞＋裏の熱（実）',correct:true},{t:T('水滞',t.水滞)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 気の鬱滞に裏の実熱が加わります。',
+   ng:'<b>再考を。</b> 血虚や水滞ではない。<b>気の鬱滞＋裏の実熱</b>です。'},
+  {n:'② 八綱',hint:'体力充実・脈弦実（実）／便秘・黄苔（熱）／裏',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('裏・実・熱','体力充実で裏に熱と実がこもる。')+'',correct:true},{t:'表・実・寒',correct:false}],
+   ok:'<b>正解。</b> 裏・実・熱です。疏らしつつ瀉します。',
+   ng:'<b>再考を。</b> 虚寒でも表寒でもない。<b>裏・実・熱</b>です。'},
+  {n:'③ 六病位',hint:'胸脇苦満（少陽）＋便秘・腹満（陽明の裏実）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:T('少陽病',t.少陽病)+'＋'+T('陽明病',t.陽明病)+'（少陽陽明）',correct:true},{t:T('太陰病',t.太陰病),correct:false}],
+   ok:'<b>正解。</b> 少陽から陽明（裏実）にかかる実証です。',
+   ng:'<b>再考を。</b> 太陽・太陰ではない。<b>少陽＋陽明（少陽陽明）</b>です。'},
+  {n:'④ 五臓',hint:'季肋部の張り・口苦（疏泄の鬱熱）／便秘（腑の実）',
+   options:[{t:T('脾',t.脾)+'の虚',correct:false},{t:T('肝',t.肝)+'胆（疏泄の鬱熱）＋胃腸（腑の実）',correct:true},{t:T('腎',t.腎)+'の虚',correct:false}],
+   ok:'<b>正解。</b> 肝胆の鬱熱に胃腸の腑実が加わります。',
+   ng:'<b>再考を。</b> 脾虚や腎虚ではない。<b>肝胆＋胃腸（腑実）</b>です。'}
+ ],
+ rxPrompt:'診断は「少陽陽明（少陽の鬱熱＋陽明の裏実）」。体力充実・胸脇苦満・便秘・上腹部の張り。最も適した1剤は？',
+ rx:[
+  {name:'大柴胡湯',ok:true,html:'<b>正解 ― 大柴胡湯。</b> 柴胡・黄芩・半夏・枳実・芍薬・大黄・生姜・大棗。少陽を疏らし陽明の実を瀉す。体力充実・胸脇苦満・便秘・上腹部の張りに。'},
+  {name:'小柴胡湯',ok:false,html:'<b>次点。</b> 胸脇苦満はあるが便秘・上腹部の実が乏しい中等度の少陽病に。便秘・実が強ければ大柴胡湯。'},
+  {name:'柴胡加竜骨牡蛎湯',ok:false,html:'<b>不適。</b> 精神不安・動悸・驚きやすさが前景の実証のとき。'},
+  {name:'防風通聖散',ok:false,html:'<b>不適。</b> 肥満・便秘で臍腹部に皮下脂肪が多く全身の実熱（表裏倶実）のとき。胸脇苦満が主なら大柴胡湯。'},
+  {name:'茵蔯蒿湯',ok:false,html:'<b>不適。</b> 黄疸・裏熱・便秘で口渇・尿不利のとき。胸脇苦満主体なら大柴胡湯。'}
+ ],
+ summary:[
+  ['主な所見','強い胸脇苦満・上腹部のつかえ／便秘・口苦・いらいら／体格充実・舌やや紅黄苔・脈弦実'],
+  ['① 気血水','<b>気の鬱滞＋裏の実熱</b>'],['② 八綱','<b>裏・実・熱</b>'],
+  ['③ 六病位','<b>少陽＋陽明（少陽陽明）</b>'],['④ 五臓','<b>肝胆（鬱熱）＋胃腸（腑実）</b>'],
+  ['方剤','<b>大柴胡湯</b>：和解＋瀉下泄熱。']
+ ],
+ diff:[
+  {name:'小柴胡湯',text:'胸脇苦満はあるが便秘・実が乏しい少陽病。'},
+  {name:'柴胡加竜骨牡蛎湯',text:'精神不安・動悸・驚きやすさが前景の実証。'},
+  {name:'防風通聖散',text:'肥満・便秘で全身の実熱（表裏倶実）。'},
+  {name:'茵蔯蒿湯',text:'黄疸・裏熱・便秘で口渇・尿不利。'}
+ ],
+ caution:'大黄（瀉下）・黄芩（肝障害・間質性肺炎まれ）を含む。虚証には用いない。'
+},
+
+{
+ id:'skt', domain:'感冒（亜急性）', rxName:'柴胡桂枝湯',
+ title:'こじれた感冒', sub:'35歳男性。1週間続く微熱・寒気と汗・吐き気・季肋部の張り',
+ patient:'35歳 男性。<br><b>主訴：</b>「かぜが1週間続く。微熱と寒気、うっすら汗、食欲不振と吐き気。みぞおち〜わき腹が張り、頭痛と関節のだるさも残る」',
+ learn:'表証の名残（桂枝湯証）と少陽が併存した、感冒の<b>亜急性期（こじれ）</b>＝太陽少陽合病です。',
+ minKey:5,
+ questions:[
+  {q:'経過は？',a:'1週間ほど、すっきりしません。',key:true},
+  {q:'熱・寒気・汗は？',a:'微熱と寒気があり、うっすら汗をかきます。',key:true},
+  {q:'季肋部の張りは？',a:'みぞおち〜わき腹が張ります。',key:true},
+  {q:'吐き気・食欲は？',a:'吐き気があり、食欲も落ちています。',key:true},
+  {q:'頭痛・関節は？',a:'頭痛と関節のだるさが残ります。',key:true},
+  {q:'口の苦みは？',a:'やや苦いです。',key:true},
+  {q:'強い便秘は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','舌は淡紅、苔は薄白。'],
+  ['舌診','淡紅・薄白苔。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は弦＋やや浮。'],
+  ['腹診','腹力は中等度。'+T('胸脇苦満',t.胸脇苦満)+'（軽〜中）、腹直筋のやや緊張。']
+ ],
+ tongue:{prompt:'こじれた微熱・うっすら汗・胸脇苦満＋頭痛・関節痛。最も合致する病態は？',
+  options:[{t:'純然たる表実（無汗）',correct:false},{t:'表証の名残（'+T('桂枝湯証','自汗・脈浮弱の表虚の太陽病。')+'）と少陽が併存（'+T('太陽少陽合病','表（太陽）と半表半裏（少陽）にまたがる病態。')+'）',correct:true},{t:'裏の実熱',correct:false}],
+  ok:'<b>正解。</b> 汗を伴う表証の名残（桂枝湯証）に、胸脇苦満・吐き気（少陽）が加わった太陽少陽合病です。',
+  ng:'<b>もう一度。</b> 無汗の純表実でも裏実熱でもない。汗＋胸脇苦満＋頭痛は<b>太陽少陽合病</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'外感（表証の名残）＋少陽の気鬱。慢性の虚は軽度',
+   options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:'外感が表から半表半裏に及ぶ段階（内傷の虚は軽い）',correct:true},{t:T('水滞',t.水滞)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 外感が表から半表半裏に及んだ段階で、慢性の虚は前景化していません。',
+   ng:'<b>再考を。</b> 血虚や水滞が主ではない。<b>外感が表→半表半裏に及ぶ段階</b>です。'},
+  {n:'② 八綱',hint:'表証の名残＋半表半裏／虚実は中間',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('表＋半表半裏','表（太陽）と半表半裏（少陽）にまたがる。')+'（虚実中間）',correct:true},{t:'裏・実・熱',correct:false}],
+   ok:'<b>正解。</b> 表と半表半裏にまたがる中間証です。',
+   ng:'<b>再考を。</b> 裏の虚寒でも裏実熱でもない。<b>表＋半表半裏</b>です。'},
+  {n:'③ 六病位',hint:'表証の名残（太陽）＋胸脇苦満（少陽）',
+   options:[{t:T('太陰病',t.太陰病),correct:false},{t:T('太陽少陽合病','太陽（表）と少陽（半表半裏）がともにある。')+'',correct:true},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 太陽と少陽が併存する太陽少陽合病です。',
+   ng:'<b>再考を。</b> 太陰・陽明ではない。<b>太陽少陽合病</b>です。'},
+  {n:'④ 五臓',hint:'体表（表証の名残）＋季肋部の張り（少陽）',
+   options:[{t:T('腎',t.腎)+'の虚',correct:false},{t:T('肺','肺衛は体表の防御。')+'衛（表）＋'+T('肝',t.肝)+'胆（少陽）',correct:true},{t:T('脾',t.脾)+'の陽虚',correct:false}],
+   ok:'<b>正解。</b> 体表（肺衛）の名残と肝胆（少陽）が併存します。',
+   ng:'<b>再考を。</b> 腎虚や脾陽虚ではない。<b>肺衛（表）＋肝胆（少陽）</b>です。'}
+ ],
+ rxPrompt:'診断は「太陽少陽合病（表証の名残＋少陽）」。こじれた微熱・汗・胸脇苦満・頭痛・吐き気。最も適した1剤は？',
+ rx:[
+  {name:'柴胡桂枝湯',ok:true,html:'<b>正解 ― 柴胡桂枝湯。</b> 小柴胡湯と桂枝湯の合方。表証の名残と少陽を同時に治す。こじれた感冒（微熱・汗・胸脇苦満・頭痛・吐き気・腹痛）に。'},
+  {name:'葛根湯',ok:false,html:'<b>不適。</b> 発症初期の表実（無汗・項背強）に。こじれて胸脇苦満が出たら柴胡桂枝湯。'},
+  {name:'小柴胡湯',ok:false,html:'<b>次点。</b> 表証が去り少陽が主のとき（頭痛・汗・関節痛の表証が乏しい）。'},
+  {name:'桂枝湯',ok:false,html:'<b>不適。</b> 表虚（自汗）主体で胸脇苦満がないとき。'},
+  {name:'麻黄湯',ok:false,html:'<b>不適。</b> 高熱・無汗・体節痛の表実初期に。'}
+ ],
+ summary:[
+  ['主な所見','1週間のこじれ・微熱・寒気・うっすら汗／吐き気・食欲不振・頭痛・関節のだるさ／胸脇苦満・脈弦やや浮'],
+  ['① 気血水','外感が表→半表半裏に及ぶ（虚は軽度）'],['② 八綱','<b>表＋半表半裏</b>（虚実中間）'],
+  ['③ 六病位','<b>太陽少陽合病</b>'],['④ 五臓','<b>肺衛（表）＋肝胆（少陽）</b>'],
+  ['方剤','<b>柴胡桂枝湯</b>：表証の名残＋少陽を同時に。']
+ ],
+ diff:[
+  {name:'葛根湯',text:'発症初期の表実（無汗・項背強）。'},
+  {name:'小柴胡湯',text:'表証が去り少陽が主（表証が乏しい）。'},
+  {name:'桂枝湯',text:'表虚（自汗）主体で胸脇苦満なし。'},
+  {name:'麻黄湯',text:'高熱・無汗・体節痛の表実初期。'}
+ ],
+ caution:'甘草・黄芩を含む。'
+},
+
+{
+ id:'nnt', domain:'消化器（胃腸）', rxName:'人参湯',
+ title:'胃の冷えと下痢', sub:'50歳女性。やせ型・冷え性。胃部の冷え・もたれ・食欲不振・下痢・薄い唾液',
+ patient:'50歳 女性。やせ型・冷え性。<br><b>主訴：</b>「胃のあたりが冷えて重く、食欲がない。冷たい物で下す。薄い唾液が多く出て、疲れやすい」温めると楽。',
+ learn:'脾胃の<b>虚寒</b>（中焦が冷えて働かない）の代表例です。',
+ minKey:5,
+ questions:[
+  {q:'胃の様子は？',a:'冷えて重く、温めると楽です。',key:true},
+  {q:'食欲は？',a:'ありません。',key:true},
+  {q:'冷たい物では？',a:'下痢しやすく悪化します。',key:true},
+  {q:'唾液は？',a:'薄い唾液が多く出ます。',key:true},
+  {q:'疲労は？',a:'疲れやすいです。',key:true},
+  {q:'手足は？',a:'冷えます。',key:true},
+  {q:'強い口渇・実熱は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','顔色不良。舌は淡（胖大）、苔は白く湿る。'],
+  ['舌診','淡・胖大・白苔（湿潤）。'],
+  ['聞診','声に力がない。'],
+  ['脈診','脈は沈・遅・弱。'],
+  ['腹診','腹力は軟弱。心窩部に冷感・つかえ、'+T('心下振水音',t.心下振水音)+'のことも。']
+ ],
+ tongue:{prompt:'胃部の冷え・もたれ・冷飲で下痢・薄い唾液・舌淡湿潤・脈沈遅。最も合致する病態は？',
+  options:[{t:'胃熱（紅舌・黄苔）',correct:false},{t:T('脾',t.脾)+'（胃）の'+T('陽虚','温める力の不足。中焦が冷えて働かない。')+'（中焦虚寒）',correct:true},{t:T('陰虚',t.陰虚),correct:false}],
+  ok:'<b>正解。</b> 胃部の冷え・冷飲で下痢・薄い唾液・舌淡湿潤・脈沈遅は、脾胃の虚寒です。',
+  ng:'<b>もう一度。</b> 胃熱でも陰虚でもない。冷え・薄い唾液・舌淡湿潤は<b>脾（胃）の陽虚（中焦虚寒）</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'胃の冷え・もたれ・薄い唾液・下痢（温める力の不足）',
+   options:[{t:T('瘀血',t.瘀血)+'が主体',correct:false},{t:'脾の'+T('陽虚','陽気＝温める力の不足。')+'（気・陽の不足）',correct:true},{t:'湿熱が主体',correct:false}],
+   ok:'<b>正解。</b> 中焦を温める脾の陽気の不足が主体です。',
+   ng:'<b>再考を。</b> 瘀血や湿熱ではない。<b>脾の陽虚</b>です。'},
+  {n:'② 八綱',hint:'冷え（寒）／倦怠・脈沈遅弱（虚）／慢性・体内（裏）',
+   options:[{t:'裏・実・熱',correct:false},{t:T('裏・虚・寒','体内で陽が不足し冷える。')+'',correct:true},{t:'表・実・寒',correct:false}],
+   ok:'<b>正解。</b> 裏・虚・寒です。温めて補います。',
+   ng:'<b>再考を。</b> 裏実熱でも表寒でもない。<b>裏・虚・寒</b>です。'},
+  {n:'③ 六病位',hint:'慢性の裏の虚寒（消化機能の低下）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:T('太陰病',t.太陰病)+'（裏の虚寒）',correct:true},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 裏の虚寒で消化機能が落ちた太陰病です。',
+   ng:'<b>再考を。</b> 太陽・陽明病ではない。<b>太陰病</b>です。'},
+  {n:'④ 五臓',hint:'胃の冷え・もたれ・下痢・薄い唾液 ＝ 運化と温煦を主る臓',
+   options:[{t:T('肝',t.肝)+'の高ぶり',correct:false},{t:T('脾',t.脾)+'（胃）の陽虚＝運化・温煦の低下',correct:true},{t:T('腎',t.腎)+'が単独で主体',correct:false}],
+   ok:'<b>正解。</b> 脾（胃）の陽虚が中心。温中健脾で治します。',
+   ng:'<b>再考を。</b> 肝の高ぶりや腎単独ではない。中心は<b>脾（胃）の陽虚</b>です。'}
+ ],
+ rxPrompt:'診断は「脾胃の虚寒（太陰）」。胃部の冷え・もたれ・冷飲で下痢・薄い唾液。最も適した1剤は？',
+ rx:[
+  {name:'人参湯',ok:true,html:'<b>正解 ― 人参湯（理中丸）。</b> 人参・乾姜・白朮・甘草。中焦を温め脾を補う（温中健脾）。脾胃の虚寒（胃部の冷え・もたれ・下痢・薄い唾液）に。'},
+  {name:'六君子湯',ok:false,html:'<b>不適。</b> 脾気虚＋水滞・もたれが主で、著明な冷え・冷飲で下痢が前景でないとき。'},
+  {name:'大建中湯',ok:false,html:'<b>不適。</b> 腹部（腸）の強い冷え・腹満・腸蠕動の亢進に。本例は胃部（中焦）の虚寒。'},
+  {name:'真武湯',ok:false,html:'<b>不適。</b> 腎脾の陽虚＋水滞・めまい・浮腫・脈沈微の全身性陽虚に。'},
+  {name:'安中散',ok:false,html:'<b>不適。</b> 胃痛・胸やけ・神経性胃炎が主のとき。慢性の下痢・薄い唾液が主なら人参湯。'}
+ ],
+ summary:[
+  ['主な所見','胃部の冷え・もたれ・温めて軽快／食欲不振・冷飲で下痢・薄い唾液／舌淡胖大湿潤・脈沈遅弱'],
+  ['① 気血水','<b>脾の陽虚（気・陽の不足）</b>'],['② 八綱','<b>裏・虚・寒</b>'],
+  ['③ 六病位','<b>太陰病</b>'],['④ 五臓','<b>脾（胃）の陽虚＝運化・温煦の低下</b>'],
+  ['方剤','<b>人参湯</b>：温中健脾。']
+ ],
+ diff:[
+  {name:'六君子湯',text:'脾気虚＋水滞・もたれが主（冷えは軽い）。'},
+  {name:'大建中湯',text:'腹部（腸）の強い冷え・腹満・蠕動亢進。'},
+  {name:'真武湯',text:'全身の陽虚＋水滞（めまい・浮腫）。'},
+  {name:'安中散',text:'胃痛・胸やけ・神経性胃炎が主。'}
+ ],
+ caution:'甘草を含む。'
+},
+
+{
+ id:'ats', domain:'消化器（胃痛）', rxName:'安中散',
+ title:'冷えと胃痛・胸やけ', sub:'38歳女性。やせ型。空腹時の胃痛・胸やけ・げっぷ（冷え・ストレスで悪化）',
+ patient:'38歳 女性。やせ型。<br><b>主訴：</b>「みぞおちが痛む（空腹時）。胸やけとげっぷがあり、ストレスで悪化。甘い物が欲しくなる」冷えると痛む。',
+ learn:'やせ型・冷え性の人の、中焦の虚寒に気滞を伴う<b>慢性胃痛（神経性胃炎）</b>です。',
+ minKey:5,
+ questions:[
+  {q:'胃痛の様子は？',a:'空腹時に痛み、冷えると悪化、温めると楽です。',key:true},
+  {q:'胸やけ・げっぷは？',a:'あります。',key:true},
+  {q:'悪化の誘因は？',a:'ストレスで悪くなります。',key:true},
+  {q:'嗜好は？',a:'甘い物が欲しくなります。',key:true},
+  {q:'吐き気は？',a:'ときにあります。',key:true},
+  {q:'体格・冷えは？',a:'やせ型で冷え性です。',key:true},
+  {q:'強い実熱・便秘は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','やせ型。舌は淡、苔は薄白。'],
+  ['舌診','淡・薄白苔。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は沈・細（弦）。'],
+  ['腹診','腹力は軟弱。心窩部に圧痛・つかえ。']
+ ],
+ tongue:{prompt:'空腹時の胃痛・冷えで悪化・胸やけ・やせ型冷え性。最も合致する病態は？',
+  options:[{t:'胃の実熱',correct:false},{t:'中焦の'+T('虚寒','冷えて働きが落ちた状態。')+'＋'+T('気滞',t.気滞)+'（胃の冷えと痛み）',correct:true},{t:T('陰虚',t.陰虚),correct:false}],
+  ok:'<b>正解。</b> 空腹時痛・冷えで悪化・温めて軽快は中焦の虚寒。ストレスでの悪化は気滞の関与です。',
+  ng:'<b>もう一度。</b> 胃の実熱でも陰虚でもない。冷えで悪化する胃痛は<b>中焦の虚寒＋気滞</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'冷えで悪化する胃痛（虚寒）／ストレスで悪化（気滞）',
+   options:[{t:T('瘀血',t.瘀血)+'が主体',correct:false},{t:'中焦の虚寒に'+T('気滞',t.気滞)+'を伴う',correct:true},{t:'湿熱が主体',correct:false}],
+   ok:'<b>正解。</b> 中焦の冷えに気の停滞が加わり、胃が痛みます。',
+   ng:'<b>再考を。</b> 瘀血や湿熱ではない。<b>中焦の虚寒＋気滞</b>です。'},
+  {n:'② 八綱',hint:'冷えで悪化（寒）／やせ・腹力軟弱（虚）／体内（裏）',
+   options:[{t:'裏・実・熱',correct:false},{t:T('裏・虚・寒','体内で冷えて働きが落ちる。')+'',correct:true},{t:'表・実・寒',correct:false}],
+   ok:'<b>正解。</b> 裏・虚・寒です。温めて痛みを止めます。',
+   ng:'<b>再考を。</b> 裏実熱でも表寒でもない。<b>裏・虚・寒</b>です。'},
+  {n:'③ 六病位',hint:'慢性の裏の虚寒（胃）',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:T('太陰病',t.太陰病)+'／内傷（裏の虚寒）',correct:true},{t:T('陽明病',t.陽明病),correct:false}],
+   ok:'<b>正解。</b> 裏の虚寒（太陰）として捉えます。',
+   ng:'<b>再考を。</b> 太陽・陽明病ではない。<b>裏の虚寒（太陰）</b>です。'},
+  {n:'④ 五臓',hint:'胃の冷えと痛み（中焦）＋ストレスで悪化（気の停滞）',
+   options:[{t:T('腎',t.腎)+'の虚',correct:false},{t:T('脾',t.脾)+'胃（中焦）の虚寒＋'+T('肝',t.肝)+'（気滞）',correct:true},{t:T('肺',t.肺)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 脾胃の虚寒に、肝の気滞（ストレス）が関与します。',
+   ng:'<b>再考を。</b> 腎虚や肺ではない。<b>脾胃の虚寒＋肝（気滞）</b>です。'}
+ ],
+ rxPrompt:'診断は「中焦の虚寒＋気滞」。やせ型・冷え性の慢性胃痛・胸やけ・空腹時痛。最も適した1剤は？',
+ rx:[
+  {name:'安中散',ok:true,html:'<b>正解 ― 安中散。</b> 桂皮・延胡索・牡蛎・茴香・縮砂・甘草・良姜。胃を温め痛みを止め、酸を制す。やせ型・冷え性の慢性胃痛・胸やけ（神経性胃炎）に。'},
+  {name:'人参湯',ok:false,html:'<b>不適。</b> 胃の冷え・もたれ・下痢・薄い唾液が主の脾陽虚に。胃痛・胸やけが主なら安中散。'},
+  {name:'六君子湯',ok:false,html:'<b>不適。</b> 食欲不振・もたれ・心下振水音の脾気虚＋水滞に。'},
+  {name:'半夏瀉心湯',ok:false,html:'<b>不適。</b> 心下痞＋下痢＋口苦の寒熱錯雑に。'},
+  {name:'柴胡桂枝湯',ok:false,html:'<b>不適。</b> 腹痛＋胸脇苦満＋感冒様のとき。'}
+ ],
+ summary:[
+  ['主な所見','空腹時の胃痛・冷えで悪化・温めて軽快／胸やけ・げっぷ・甘い物を好む／やせ型・冷え性・心窩部圧痛・脈沈細'],
+  ['① 気血水','<b>中焦の虚寒＋気滞</b>'],['② 八綱','<b>裏・虚・寒</b>'],
+  ['③ 六病位','<b>太陰病／内傷</b>'],['④ 五臓','<b>脾胃（中焦）の虚寒＋肝（気滞）</b>'],
+  ['方剤','<b>安中散</b>：温胃・止痛・制酸。']
+ ],
+ diff:[
+  {name:'人参湯',text:'胃の冷え・もたれ・下痢・薄い唾液が主。'},
+  {name:'六君子湯',text:'食欲不振・もたれ・心下振水音。'},
+  {name:'半夏瀉心湯',text:'心下痞＋下痢＋口苦の寒熱錯雑。'},
+  {name:'柴胡桂枝湯',text:'腹痛＋胸脇苦満＋感冒様。'}
+ ],
+ caution:'甘草を含む。潰瘍など器質的疾患の除外を。'
+},
+
+{
+ id:'sry', domain:'水滞・炎症', rxName:'柴苓湯',
+ title:'下痢・むくみと季肋部の張り', sub:'45歳女性。嘔吐下痢・口渇と乏尿・浮腫・胸脇苦満・微熱',
+ patient:'45歳 女性。<br><b>主訴：</b>「下痢と吐き気があり、口が渇くのに尿が少なくむくむ。みぞおち〜わき腹が張り、微熱とだるさもある」',
+ learn:'少陽の鬱に水のかたより（水滞）が重なった病態で、小柴胡湯と五苓散を併せます。',
+ minKey:5,
+ questions:[
+  {q:'下痢・吐き気は？',a:'下痢と吐き気があります。',key:true},
+  {q:'口の渇きと尿は？',a:'渇くのに尿が少ないです。',key:true},
+  {q:'むくみは？',a:'あります。',key:true},
+  {q:'季肋部の張りは？',a:'みぞおち〜わき腹が張ります。',key:true},
+  {q:'微熱・だるさは？',a:'微熱とだるさがあります。',key:true},
+  {q:'食欲は？',a:'落ちています。',key:true},
+  {q:'強い冷え一辺倒か？',a:'そうではありません。',key:false}
+ ],
+ findings:[
+  ['望診','舌はやや紅、苔は白くやや湿る。'],
+  ['舌診','やや紅・白苔（やや湿）。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈は弦＋やや滑。'],
+  ['腹診','腹力は中等度。'+T('胸脇苦満',t.胸脇苦満)+'(+)、心下振水音のことも。']
+ ],
+ tongue:{prompt:'口渇＋乏尿＋下痢・浮腫＋胸脇苦満。最も合致する病態は？',
+  options:[{t:'純然たる裏の虚寒',correct:false},{t:T('少陽','半表半裏。胸脇苦満・口苦・微熱。')+'の鬱＋'+T('水滞','水が体内で偏在し、口渇・乏尿・浮腫・下痢。')+'',correct:true},{t:T('血虚',t.血虚)+'が主体',correct:false}],
+  ok:'<b>正解。</b> 胸脇苦満・微熱（少陽）に、口渇・乏尿・下痢・浮腫（水滞）が重なります。和解と利水を併せます。',
+  ng:'<b>もう一度。</b> 虚寒でも血虚でもない。胸脇苦満＋口渇乏尿浮腫は<b>少陽の鬱＋水滞</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'口渇・乏尿・下痢・浮腫（水のかたより）／季肋部の張り（気鬱）',
+   options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:T('水滞',t.水滞)+'が主体で少陽の気鬱を伴う',correct:true},{t:T('瘀血',t.瘀血)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 水のかたより（水滞）が主体で、少陽の気鬱を伴います。',
+   ng:'<b>再考を。</b> 血虚や瘀血ではない。<b>水滞＋少陽の気鬱</b>です。'},
+  {n:'② 八綱',hint:'半表半裏（少陽）＋裏の水滞／虚実中間',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('半表半裏＋裏の水滞','少陽の所見に水滞が重なる。')+'（虚実中間）',correct:true},{t:'表・実・寒',correct:false}],
+   ok:'<b>正解。</b> 半表半裏（少陽）に水滞が重なる中間証です。',
+   ng:'<b>再考を。</b> 虚寒でも表寒でもない。<b>半表半裏＋裏の水滞</b>です。'},
+  {n:'③ 六病位',hint:'胸脇苦満・微熱（少陽）に水の停滞が加わる',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:T('少陽病',t.少陽病)+'に水滞を伴う',correct:true},{t:T('太陰病',t.太陰病)+'の純然たる虚寒',correct:false}],
+   ok:'<b>正解。</b> 少陽病に水滞が加わった病態です。',
+   ng:'<b>再考を。</b> 太陽病でも純然たる太陰の虚寒でもない。<b>少陽病＋水滞</b>です。'},
+  {n:'④ 五臓',hint:'季肋部の張り（少陽）＋水のさばき（脾・膀胱）',
+   options:[{t:T('腎',t.腎)+'陽虚が単独',correct:false},{t:T('肝',t.肝)+'胆（少陽）＋'+T('脾',t.脾)+'・膀胱（水）',correct:true},{t:T('肺',t.肺)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 肝胆（少陽）と、水をさばく脾・膀胱が関与します。',
+   ng:'<b>再考を。</b> 腎陽虚単独や肺ではない。<b>肝胆（少陽）＋脾・膀胱</b>です。'}
+ ],
+ rxPrompt:'診断は「少陽の鬱＋水滞」。口渇・乏尿・下痢・浮腫・胸脇苦満・微熱。最も適した1剤は？',
+ rx:[
+  {name:'柴苓湯',ok:true,html:'<b>正解 ― 柴苓湯。</b> 小柴胡湯＋五苓散。和解（少陽）＋利水。口渇・乏尿を伴う嘔吐下痢・浮腫・炎症や、胸脇苦満を伴う水滞に。'},
+  {name:'五苓散',ok:false,html:'<b>不適。</b> 胸脇苦満や微熱（少陽の所見）を伴わない単純な水滞に。'},
+  {name:'小柴胡湯',ok:false,html:'<b>不適。</b> 水滞（口渇・乏尿・浮腫）を伴わない少陽病に。'},
+  {name:'真武湯',ok:false,html:'<b>不適。</b> 陽虚＋水滞（冷え・脈沈微）が前景のとき。'},
+  {name:'半夏瀉心湯',ok:false,html:'<b>不適。</b> 心下痞＋寒熱錯雑の下痢に。胸脇苦満＋水滞なら柴苓湯。'}
+ ],
+ summary:[
+  ['主な所見','下痢・吐き気／口渇するのに乏尿・浮腫／みぞおち〜わき腹の張り・微熱・だるさ・脈弦やや滑'],
+  ['① 気血水','<b>水滞＋少陽の気鬱</b>'],['② 八綱','<b>半表半裏＋裏の水滞</b>（中間証）'],
+  ['③ 六病位','<b>少陽病＋水滞</b>'],['④ 五臓','<b>肝胆（少陽）＋脾・膀胱（水）</b>'],
+  ['方剤','<b>柴苓湯</b>：和解＋利水。']
+ ],
+ diff:[
+  {name:'五苓散',text:'少陽の所見を伴わない単純な水滞。'},
+  {name:'小柴胡湯',text:'水滞を伴わない少陽病。'},
+  {name:'真武湯',text:'陽虚＋水滞（冷え・脈沈微）が前景。'},
+  {name:'半夏瀉心湯',text:'心下痞＋寒熱錯雑の下痢。'}
+ ],
+ caution:'甘草・黄芩を含む。'
+},
+
+{
+ id:'shp', domain:'呼吸器・精神', rxName:'柴朴湯',
+ title:'咳・痰とのどのつかえ・不安', sub:'42歳女性。咳と痰・咽喉の異物感・抑うつ・季肋部の張り（喘鳴傾向）',
+ patient:'42歳 女性。<br><b>主訴：</b>「咳と痰がからみ、のどに異物感がある。気分が塞ぎ不安で、みぞおち〜わき腹が張る。ストレスや天候で喘鳴ぎみになる」',
+ learn:'少陽の鬱に、気滞と痰（半夏厚朴湯証）が重なった、呼吸器＋精神症状の病態です。',
+ minKey:5,
+ questions:[
+  {q:'咳・痰は？',a:'咳と痰がからみます。',key:true},
+  {q:'のどの異物感は？',a:'あります。',key:true},
+  {q:'気分は？',a:'塞いで不安です。',key:true},
+  {q:'季肋部の張りは？',a:'みぞおち〜わき腹が張ります。',key:true},
+  {q:'悪化の誘因は？',a:'ストレスや天候で悪化します。',key:true},
+  {q:'喘鳴は？',a:'軽くゼコゼコします。',key:true},
+  {q:'強い発熱・便秘は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','舌は淡紅、苔は白くやや湿る。'],
+  ['舌診','淡紅・白苔（やや湿）。'],
+  ['聞診','咳・軽い喘鳴。'],
+  ['脈診','脈は弦（滑）。'],
+  ['腹診','腹力は中等度。'+T('胸脇苦満',t.胸脇苦満)+'(+)、心下のつかえ。']
+ ],
+ tongue:{prompt:'咳・痰＋咽喉の異物感＋気分の塞ぎ＋胸脇苦満。最も合致する病態は？',
+  options:[{t:'肺の'+T('陰虚',t.陰虚)+'・燥',correct:false},{t:T('少陽','半表半裏。胸脇苦満。')+'の鬱＋'+T('気滞',t.気滞)+'痰（気のめぐりの停滞と痰）',correct:true},{t:'裏の実熱',correct:false}],
+  ok:'<b>正解。</b> 胸脇苦満（少陽）に、咽喉異物感・気の塞ぎ・痰（気滞痰）が重なります。和解と理気化痰を併せます。',
+  ng:'<b>もう一度。</b> 陰虚の乾いた咳でも裏実熱でもない。胸脇苦満＋気滞痰は<b>少陽の鬱＋気滞痰</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'のどの異物感・気の塞ぎ（気滞）／痰がからむ（水）／季肋部の張り（気鬱）',
+   options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:T('気滞',t.気滞)+'＋痰（水）、少陽の気鬱を伴う',correct:true},{t:T('瘀血',t.瘀血)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 気の停滞に痰が絡み、少陽の気鬱を伴います。',
+   ng:'<b>再考を。</b> 血虚や瘀血ではない。<b>気滞＋痰（少陽の気鬱）</b>です。'},
+  {n:'② 八綱',hint:'半表半裏（少陽）＋気鬱／虚実中間',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('半表半裏＋気鬱','少陽の所見に気滞痰が重なる。')+'（中間証）',correct:true},{t:'裏・実・熱',correct:false}],
+   ok:'<b>正解。</b> 半表半裏（少陽）に気鬱が重なる中間証です。',
+   ng:'<b>再考を。</b> 虚寒でも実熱でもない。<b>半表半裏＋気鬱</b>です。'},
+  {n:'③ 六病位',hint:'胸脇苦満（少陽）が前景',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:T('少陽病',t.少陽病)+'（気滞痰を伴う）',correct:true},{t:T('太陰病',t.太陰病),correct:false}],
+   ok:'<b>正解。</b> 少陽病に気滞痰が重なった病態です。',
+   ng:'<b>再考を。</b> 太陽・太陰病ではない。<b>少陽病（＋気滞痰）</b>です。'},
+  {n:'④ 五臓',hint:'季肋部の張り（少陽）＋咳・痰（肺）',
+   options:[{t:T('腎',t.腎)+'の虚',correct:false},{t:T('肝',t.肝)+'胆（少陽）＋'+T('肺',t.肺)+'（気・痰）',correct:true},{t:T('脾',t.脾)+'の陽虚',correct:false}],
+   ok:'<b>正解。</b> 肝胆（少陽）と肺（気・痰）が関与します。',
+   ng:'<b>再考を。</b> 腎虚や脾陽虚ではない。<b>肝胆（少陽）＋肺</b>です。'}
+ ],
+ rxPrompt:'診断は「少陽の鬱＋気滞痰」。胸脇苦満を伴う咳・痰・咽喉の異物感・不安。最も適した1剤は？',
+ rx:[
+  {name:'柴朴湯',ok:true,html:'<b>正解 ― 柴朴湯。</b> 小柴胡湯＋半夏厚朴湯。和解＋理気化痰・降逆。胸脇苦満を伴う気管支喘息・咳・痰、咽喉の異物感・不安に。'},
+  {name:'半夏厚朴湯',ok:false,html:'<b>不適。</b> 胸脇苦満を伴わない咽喉異物感・気滞・不安のみのとき。'},
+  {name:'小柴胡湯',ok:false,html:'<b>不適。</b> 気滞・痰・咽喉異物感を伴わない少陽病に。'},
+  {name:'麦門冬湯',ok:false,html:'<b>不適。</b> 肺の陰虚・燥の乾いた咳に。痰・気滞・胸脇苦満なら柴朴湯。'},
+  {name:'麻杏甘石湯',ok:false,html:'<b>不適。</b> 熱を伴う喘鳴・咳（肺熱）に。'}
+ ],
+ summary:[
+  ['主な所見','咳・痰・軽い喘鳴／咽喉の異物感・気分の塞ぎ・不安／みぞおち〜わき腹の張り・脈弦'],
+  ['① 気血水','<b>気滞＋痰（少陽の気鬱）</b>'],['② 八綱','<b>半表半裏＋気鬱</b>（中間証）'],
+  ['③ 六病位','<b>少陽病（＋気滞痰）</b>'],['④ 五臓','<b>肝胆（少陽）＋肺</b>'],
+  ['方剤','<b>柴朴湯</b>：和解＋理気化痰・降逆。']
+ ],
+ diff:[
+  {name:'半夏厚朴湯',text:'胸脇苦満を伴わない咽喉異物感・気滞・不安。'},
+  {name:'小柴胡湯',text:'気滞・痰・咽喉異物感を伴わない少陽病。'},
+  {name:'麦門冬湯',text:'肺の陰虚・燥の乾いた咳。'},
+  {name:'麻杏甘石湯',text:'熱を伴う喘鳴・咳（肺熱）。'}
+ ],
+ caution:'甘草・黄芩を含む。'
+},
+
+{
+ id:'jdi', domain:'外傷（打撲）', rxName:'治打撲一方',
+ title:'打撲後の腫れと痛み', sub:'30歳男性。転倒による打撲。患部の腫脹・疼痛・皮下出血',
+ patient:'30歳 男性。<br><b>主訴：</b>「転倒して打撲した部位が腫れて痛む。青あざ（皮下出血）ができ、押すと痛い」受傷から数日。',
+ learn:'打撲・捻挫など外傷による<b>局所の瘀血</b>（血の停滞）の病態です。',
+ minKey:5,
+ questions:[
+  {q:'受傷の状況は？',a:'転倒して打撲しました。',key:true},
+  {q:'患部の様子は？',a:'腫れて痛みます。',key:true},
+  {q:'皮下出血は？',a:'青あざができています。',key:true},
+  {q:'圧痛は？',a:'押すと痛いです。',key:true},
+  {q:'経過は？',a:'受傷から数日です。',key:true},
+  {q:'動かすと？',a:'痛みます。',key:true},
+  {q:'発熱・全身症状は？',a:'ありません。',key:false}
+ ],
+ findings:[
+  ['望診','患部は腫脹し、暗赤〜紫の皮下出血。舌はやや暗、苔は薄い。'],
+  ['舌診','やや暗（瘀血）・薄苔。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈はやや渋（沈）。'],
+  ['腹診','腹力は中等度（特記すべき所見なし）。']
+ ],
+ tongue:{prompt:'打撲後の腫脹・疼痛・皮下出血。最も合致する病態は？',
+  options:[{t:'表の風寒',correct:false},{t:'局所の'+T('瘀血','打撲などで血のめぐりが局所で停滞した状態。')+'（打撲による血の停滞）',correct:true},{t:'裏の虚寒',correct:false}],
+  ok:'<b>正解。</b> 打撲による腫脹・疼痛・皮下出血は、局所の瘀血（血の停滞）です。活血化瘀・消腫止痛で治します。',
+  ng:'<b>もう一度。</b> 表の風寒でも裏の虚寒でもない。打撲後の腫れ・あざは<b>局所の瘀血</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'打撲後の腫脹・疼痛・皮下出血',
+   options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:T('瘀血',t.瘀血)+'（外傷性・局所）',correct:true},{t:T('水滞',t.水滞)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 外傷による局所の瘀血が主体です。',
+   ng:'<b>再考を。</b> 血虚や水滞ではない。中心は<b>瘀血（局所）</b>です。'},
+  {n:'② 八綱',hint:'外傷による局所の腫脹・圧痛（実・瘀血）',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('（局所の）実・瘀血','体力低下でなく、局所に血が停滞する。')+'',correct:true},{t:'表・寒',correct:false}],
+   ok:'<b>正解。</b> 局所に血が停滞する実証（瘀血）です。',
+   ng:'<b>再考を。</b> 裏の虚寒でも表寒でもない。<b>局所の実・瘀血</b>です。'},
+  {n:'③ 六病位',hint:'外傷で、病期ではなく局所の瘀血として捉える',
+   options:[{t:T('太陽病',t.太陽病),correct:false},{t:'外傷による局所の瘀血（病期で捉えない）',correct:true},{t:T('少陰病',t.少陰病),correct:false}],
+   ok:'<b>正解。</b> 六病位の病期ではなく、外傷による局所の瘀血として捉えます。',
+   ng:'<b>再考を。</b> 太陽・少陰の病期ではない。<b>外傷による局所の瘀血</b>です。'},
+  {n:'④ 五臓',hint:'血の停滞（経絡の阻滞）',
+   options:[{t:T('脾',t.脾)+'の虚',correct:false},{t:'血の停滞（'+T('肝',t.肝)+'＝血に関連）・経絡の阻滞',correct:true},{t:T('肺',t.肺)+'が主体',correct:false}],
+   ok:'<b>正解。</b> 血（肝に関連）の停滞・経絡の阻滞です。活血で順らせます。',
+   ng:'<b>再考を。</b> 脾虚や肺ではない。中心は<b>血の停滞（経絡の阻滞）</b>です。'}
+ ],
+ rxPrompt:'診断は「外傷による局所の瘀血」。打撲・捻挫後の腫脹・疼痛・皮下出血。最も適した1剤は？',
+ rx:[
+  {name:'治打撲一方',ok:true,html:'<b>正解 ― 治打撲一方。</b> 樸樕・川芎・川骨・桂皮・甘草・大黄・丁子。活血化瘀・消腫止痛。打撲・捻挫・外傷後の腫脹・疼痛・皮下出血に。'},
+  {name:'桂枝茯苓丸',ok:false,html:'<b>不適。</b> 婦人の瘀血（月経・のぼせ足冷）が主のとき。外傷性の腫脹・打撲なら治打撲一方。'},
+  {name:'桃核承気湯',ok:false,html:'<b>不適。</b> 瘀血＋便秘・のぼせの実証（下腹部の急結）に。'},
+  {name:'通導散',ok:false,html:'<b>不適。</b> 打撲・瘀血＋強い便秘の実証に。便秘が前景なら通導散だが、腫脹・疼痛主体は治打撲一方。'},
+  {name:'葛根湯',ok:false,html:'<b>不適。</b> 外傷でなく感冒初期の表寒に。'}
+ ],
+ summary:[
+  ['主な所見','打撲・捻挫後の腫脹・疼痛／皮下出血（青あざ）・圧痛／舌やや暗・脈やや渋'],
+  ['① 気血水','<b>瘀血（外傷性・局所）</b>'],['② 八綱','<b>局所の実・瘀血</b>'],
+  ['③ 六病位','外傷による局所の瘀血（病期で捉えない）'],['④ 五臓','<b>血の停滞・経絡の阻滞</b>'],
+  ['方剤','<b>治打撲一方</b>：活血化瘀・消腫止痛。']
+ ],
+ diff:[
+  {name:'桂枝茯苓丸',text:'婦人の瘀血（月経・のぼせ足冷）が主。'},
+  {name:'桃核承気湯',text:'瘀血＋便秘・のぼせの実証。'},
+  {name:'通導散',text:'打撲・瘀血＋強い便秘の実証。'},
+  {name:'葛根湯',text:'感冒初期の表寒（外傷ではない）。'}
+ ],
+ caution:'大黄を含む（瀉下）。骨折など外傷の評価・整形外科的処置を優先する。'
+},
+
+{
+ id:'hng', domain:'化膿性疾患', rxName:'排膿散及湯',
+ title:'限局した化膿巣（はれもの）', sub:'28歳男性。限局した発赤・腫脹・疼痛・排膿（化膿巣）',
+ patient:'28歳 男性。<br><b>主訴：</b>「皮膚に赤く腫れて痛むできものができ、膿をもっている。押すと痛い」1か所に限局している。',
+ learn:'限局した<b>化膿巣</b>（熱毒・膿の停滞）で、排膿・消腫を図る病態です。',
+ minKey:5,
+ questions:[
+  {q:'患部の様子は？',a:'1か所が赤く腫れて痛みます。',key:true},
+  {q:'膿は？',a:'もっていて、出かけています。',key:true},
+  {q:'圧痛は？',a:'押すと強く痛みます。',key:true},
+  {q:'経過は？',a:'化膿してきています。',key:true},
+  {q:'範囲は？',a:'1か所に限局しています。',key:true},
+  {q:'体力は？',a:'中等度です。',key:true},
+  {q:'全身の発熱・倦怠は？',a:'軽度か、ありません。',key:false}
+ ],
+ findings:[
+  ['望診','患部は発赤・腫脹し波動（膿）。舌はやや紅、苔は薄い黄色。'],
+  ['舌診','やや紅・薄い黄苔。'],
+  ['聞診','特記なし。'],
+  ['脈診','脈はやや数（滑）。'],
+  ['腹診','腹力は中等度（特記すべき所見なし）。']
+ ],
+ tongue:{prompt:'限局した発赤・腫脹・疼痛・排膿。最も合致する病態は？',
+  options:[{t:'散在性の風湿熱',correct:false},{t:'局所の'+T('熱毒','熱と毒が局所に集まり化膿する。')+'＋膿（限局した化膿）',correct:true},{t:'裏の虚寒',correct:false}],
+  ok:'<b>正解。</b> 1か所に限局した発赤・腫脹・疼痛・排膿は、局所の熱毒・膿の停滞です。排膿・消腫で治します。',
+  ng:'<b>もう一度。</b> 散在性の湿疹でも裏の虚寒でもない。限局した化膿巣は<b>局所の熱毒＋膿</b>です。'},
+ axes:[
+  {n:'① 気血水',hint:'限局した発赤・腫脹・排膿（熱毒と膿の停滞）',
+   options:[{t:T('血虚',t.血虚)+'が主体',correct:false},{t:'局所の熱毒・化膿（気血の壅滞）',correct:true},{t:'全身の'+T('水滞',t.水滞),correct:false}],
+   ok:'<b>正解。</b> 局所に熱毒がこもり、気血が壅滞して化膿します。',
+   ng:'<b>再考を。</b> 血虚や全身の水滞ではない。<b>局所の熱毒・化膿</b>です。'},
+  {n:'② 八綱',hint:'限局した発赤・腫脹・疼痛（局所の実・熱）',
+   options:[{t:'裏・虚・寒',correct:false},{t:T('（局所の）実・熱','局所に熱と膿がこもる。')+'',correct:true},{t:'表・寒',correct:false}],
+   ok:'<b>正解。</b> 局所の実・熱（化膿）です。',
+   ng:'<b>再考を。</b> 裏の虚寒でも表寒でもない。<b>局所の実・熱</b>です。'},
+  {n:'③ 六病位',hint:'体表の限局した化膿で、病期ではなく外症として捉える',
+   options:[{t:T('少陰病',t.少陰病),correct:false},{t:'体表の限局した化膿（病期で捉えない）',correct:true},{t:T('太陰病',t.太陰病),correct:false}],
+   ok:'<b>正解。</b> 六病位の病期ではなく、体表の限局した化膿（外症）として捉えます。',
+   ng:'<b>再考を。</b> 少陰・太陰の裏証ではない。<b>体表の限局した化膿</b>です。'},
+  {n:'④ 五臓',hint:'皮膚（皮毛）局所の壅滞・化膿',
+   options:[{t:T('腎',t.腎)+'の虚',correct:false},{t:T('肺','肺は皮毛を主る。')+'（皮膚）局所の気血の壅滞',correct:true},{t:T('脾',t.脾)+'の陽虚',correct:false}],
+   ok:'<b>正解。</b> 皮膚（肺＝皮毛）局所で気血が壅滞し化膿します。',
+   ng:'<b>再考を。</b> 腎虚や脾陽虚ではない。<b>皮膚（肺）局所の壅滞</b>です。'}
+ ],
+ rxPrompt:'診断は「限局した化膿巣（局所の熱毒・膿）」。発赤・腫脹・疼痛・排膿。最も適した1剤は？',
+ rx:[
+  {name:'排膿散及湯',ok:true,html:'<b>正解 ― 排膿散及湯。</b> 排膿散（枳実・芍薬・桔梗）＋排膿湯（桔梗・甘草・生姜・大棗）。排膿・消腫・止痛。限局した化膿巣（癤・面疔・ものもらい・歯肉炎）に。'},
+  {name:'十味敗毒湯',ok:false,html:'<b>不適。</b> 散在性の急性湿疹・蕁麻疹・化膿性皮膚疾患の初期に。限局した化膿巣・排膿なら排膿散及湯。'},
+  {name:'荊芥連翹湯',ok:false,html:'<b>不適。</b> 慢性化した蓄膿・にきび・扁桃炎（腺病体質）に。急性の限局化膿は排膿散及湯。'},
+  {name:'桔梗湯',ok:false,html:'<b>不適。</b> 咽頭の発赤腫脹・痛み（扁桃炎）に。皮膚の化膿巣なら排膿散及湯。'},
+  {name:'黄連解毒湯',ok:false,html:'<b>不適。</b> 全身の実熱・のぼせに。局所の排膿が主なら排膿散及湯。'}
+ ],
+ summary:[
+  ['主な所見','限局した発赤・腫脹・疼痛・排膿／1か所に限局／舌やや紅薄黄苔・脈やや数'],
+  ['① 気血水','<b>局所の熱毒・化膿（気血の壅滞）</b>'],['② 八綱','<b>局所の実・熱</b>'],
+  ['③ 六病位','体表の限局した化膿（病期で捉えない）'],['④ 五臓','<b>肺（皮膚）局所の壅滞</b>'],
+  ['方剤','<b>排膿散及湯</b>：排膿・消腫・止痛。']
+ ],
+ diff:[
+  {name:'十味敗毒湯',text:'散在性の急性湿疹・蕁麻疹・化膿性皮膚疾患の初期。'},
+  {name:'荊芥連翹湯',text:'慢性化した蓄膿・にきび・扁桃炎（腺病体質）。'},
+  {name:'桔梗湯',text:'咽頭の発赤腫脹・痛み（扁桃炎）。'},
+  {name:'黄連解毒湯',text:'全身の実熱・のぼせ。'}
+ ],
+ caution:'甘草を含む。膿瘍は切開排膿・抗菌薬など標準治療を優先し、補助的に用いる。'
+}
+];
+
+/* ============ ビジュアル素材（舌診・腹診・生薬・アバター・ゲージ）============ */
+/* 舌診 */
+var TCOL={pale:'#e7c4bb',pink:'#dca295',red:'#cf7060',purple:'#a06a7c'};
+var TLIGHT={pale:'#f3ddd6',pink:'#eec3b9',red:'#e09a8c',purple:'#c79aa8'};
+function tongueSVG(o){
+ var c=TCOL[o.color]||TCOL.pink, cl=TLIGHT[o.color]||TLIGHT.pink;
+ var path=o.swollen
+  ?'M80 14 C46 14 24 44 24 94 C24 152 54 190 80 190 C106 190 136 152 136 94 C136 44 114 14 80 14 Z'
+  :'M80 14 C54 14 36 42 36 92 C36 150 58 188 80 188 C102 188 124 150 124 92 C124 42 106 14 80 14 Z';
+ var s='<svg viewBox="0 0 160 206" width="100%" style="max-width:140px">';
+ s+='<defs><radialGradient id="tg-'+o.color+'" cx="50%" cy="36%" r="72%"><stop offset="0%" stop-color="'+cl+'"/><stop offset="100%" stop-color="'+c+'"/></radialGradient></defs>';
+ s+='<path d="'+path+'" fill="url(#tg-'+o.color+')" stroke="#9a5e54" stroke-width="2"/>';
+ if(o.teeth){var ys=[58,88,118,148],lx=o.swollen?27:39,rx=o.swollen?133:121;
+  ys.forEach(function(y){s+='<circle cx="'+lx+'" cy="'+y+'" r="9" fill="rgba(120,55,45,.16)"/><circle cx="'+rx+'" cy="'+y+'" r="9" fill="rgba(120,55,45,.16)"/>';});}
+ if(o.coat==='thinwhite') s+='<ellipse cx="80" cy="108" rx="33" ry="60" fill="#f4efe6" opacity=".42"/>';
+ else if(o.coat==='whitewet'){s+='<ellipse cx="80" cy="108" rx="37" ry="64" fill="#f7f4ed" opacity=".74"/><ellipse cx="68" cy="80" rx="13" ry="24" fill="#ffffff" opacity=".4"/>';}
+ else if(o.coat==='yellowgreasy') s+='<ellipse cx="80" cy="116" rx="31" ry="48" fill="#e2d398" opacity=".66"/>';
+ else if(o.coat==='scantdry') s+='<ellipse cx="80" cy="110" rx="19" ry="32" fill="#efe7da" opacity=".22"/>';
+ if(o.tip==='red') s+='<ellipse cx="80" cy="33" rx="19" ry="13" fill="#c4564a" opacity=".55"/>';
+ s+='</svg>';
+ return s;
+}
+/* 腹診 */
+function abBadge(x,y,n,col){return '<circle cx="'+x+'" cy="'+y+'" r="9.5" fill="'+col+'"/><text x="'+x+'" y="'+(y+4)+'" font-size="11" fill="#fff" text-anchor="middle" font-weight="700">'+n+'</text>';}
+function abdomenSVG(a){
+ var hasCold=(a.zones||[]).some(function(z){return z.key==='cold';});
+ var soft=a.power==='充実'?'#f0dcc2':'#f7ead7';
+ var dash=(a.power.indexOf('軟')>=0)?' stroke-dasharray="6 4"':'';
+ var body='M110 40 Q72 52 58 92 C50 120 50 162 66 196 C82 224 100 236 110 236 C120 236 138 224 154 196 C170 162 170 120 162 92 Q148 52 110 40 Z';
+ var s='<svg viewBox="0 0 220 252" width="100%" style="max-width:172px">';
+ s+='<defs><radialGradient id="abg" cx="50%" cy="40%" r="64%"><stop offset="0%" stop-color="'+(hasCold?'#eef4f9':'#fdf7ee')+'"/><stop offset="100%" stop-color="'+(hasCold?'#dbe7f1':soft)+'"/></radialGradient></defs>';
+ s+='<path d="'+body+'" fill="url(#abg)" stroke="#a98f72" stroke-width="2.5"'+dash+'/>';
+ /* 肋骨弓 */
+ s+='<path d="M110 44 Q76 56 61 93 M110 44 Q144 56 159 93" fill="none" stroke="#c6a591" stroke-width="2.2" opacity=".7" stroke-linecap="round"/>';
+ /* 正中線（白線） */
+ s+='<line x1="110" y1="60" x2="110" y2="150" stroke="#cdb39f" stroke-width="1.3" opacity=".4"/>';
+ /* 腸骨稜のあたり（鼠径） */
+ s+='<path d="M70 206 Q92 224 110 226 Q128 224 150 206" fill="none" stroke="#cdb39f" stroke-width="1.2" opacity=".35"/>';
+ /* 臍（へそ） */
+ s+='<ellipse cx="110" cy="151" rx="6" ry="7.5" fill="#e6d0b4"/><path d="M105.5 149 Q110 157 114.5 149" fill="none" stroke="#a98f72" stroke-width="1.7" stroke-linecap="round"/>';
+ if(hasCold) s+='<g fill="#3b78b0" opacity=".55"><circle cx="84" cy="120" r="3"/><circle cx="134" cy="120" r="3"/><circle cx="110" cy="188" r="3"/><circle cx="92" cy="202" r="3"/><circle cx="128" cy="202" r="3"/></g>';
+ var n=0,badges='';
+ (a.zones||[]).forEach(function(z){
+  if(z.key==='cold') return;
+  n++;var col=z.key==='peri'?'#3f7d52':'#b5603f';
+  if(z.key==='sinka'){s+='<ellipse cx="110" cy="80" rx="24" ry="17" fill="'+col+'" opacity=".22"/>';badges+=abBadge(142,68,n,col);}
+  else if(z.key==='saijo'){s+='<circle cx="110" cy="125" r="13" fill="'+col+'" opacity=".22"/><circle cx="110" cy="125" r="19" fill="none" stroke="'+col+'" stroke-width="1.5" opacity=".4"/>';badges+=abBadge(140,113,n,col);}
+  else if(z.key==='kyokyo'){s+='<ellipse cx="76" cy="96" rx="17" ry="14" fill="'+col+'" opacity=".22"/><ellipse cx="144" cy="96" rx="17" ry="14" fill="'+col+'" opacity=".22"/>';badges+=abBadge(166,90,n,col);}
+  else if(z.key==='rectus'){s+='<rect x="92" y="74" width="14" height="120" rx="7" fill="'+col+'" opacity=".2"/><rect x="114" y="74" width="14" height="120" rx="7" fill="'+col+'" opacity=".2"/>';badges+=abBadge(142,108,n,col);}
+  else if(z.key==='shofuku'){s+='<circle cx="84" cy="196" r="12" fill="'+col+'" opacity=".22"/><circle cx="136" cy="196" r="12" fill="'+col+'" opacity=".22"/>';badges+=abBadge(160,196,n,col);}
+  else if(z.key==='peri'){s+='<path d="M74 158 q11 -12 22 0 q11 12 22 0 q11 -12 22 0" fill="none" stroke="'+col+'" stroke-width="3" opacity=".75"/>';badges+=abBadge(152,156,n,col);}
+  else if(z.key==='seika'){s+='<ellipse cx="110" cy="188" rx="26" ry="17" fill="'+col+'" opacity=".18"/><path d="M88 188 h44" stroke="'+col+'" stroke-width="1.5" stroke-dasharray="3 3" opacity=".6"/>';badges+=abBadge(142,178,n,col);}
+ });
+ s+=badges+'</svg>';
+ return s;
+}
+/* 生薬の働き */
+var ROLES={
+ qi:{label:'補気・健脾',c:'#3f7d52'}, blood:{label:'補血・養血',c:'#b1492f'},
+ stasis:{label:'活血化瘀',c:'#8c2f39'},
+ water:{label:'利水・化湿',c:'#3b78b0'}, warm:{label:'温陽・温中',c:'#d2802a'},
+ cool:{label:'清熱',c:'#2a9d8f'}, release:{label:'発汗・解表',c:'#c9a227'},
+ qireg:{label:'理気・行気',c:'#8a5fb0'}, calm:{label:'安神・斂肺',c:'#5566b5'},
+ yin:{label:'潤・養陰',c:'#cf6b8f'}, lift:{label:'昇提',c:'#7a8b34'},
+ liver:{label:'平肝・疏肝',c:'#9c6b3f'}, down:{label:'降逆・宣肺・化痰',c:'#6b7280'},
+ purge:{label:'瀉下',c:'#4b4b4b'}, harmon:{label:'調和・緩急',c:'#9a8f7a'}
+};
+var HERBS={
+ tsj:[{n:'当帰',r:'blood'},{n:'芍薬',r:'blood'},{n:'川芎',r:'blood'},{n:'白朮',r:'water'},{n:'茯苓',r:'water'},{n:'沢瀉',r:'water'}],
+ kkt:[{n:'葛根',r:'release'},{n:'麻黄',r:'release'},{n:'桂枝',r:'release'},{n:'芍薬',r:'harmon'},{n:'生姜',r:'harmon'},{n:'大棗',r:'harmon'},{n:'甘草',r:'harmon'}],
+ rkk:[{n:'人参',r:'qi'},{n:'白朮',r:'qi'},{n:'茯苓',r:'qi'},{n:'甘草',r:'qi'},{n:'半夏',r:'down'},{n:'陳皮',r:'qireg'},{n:'生姜',r:'warm'},{n:'大棗',r:'harmon'}],
+ yks:[{n:'釣藤鈎',r:'liver'},{n:'柴胡',r:'liver'},{n:'当帰',r:'blood'},{n:'川芎',r:'blood'},{n:'白朮',r:'qi'},{n:'茯苓',r:'qi'},{n:'甘草',r:'qi'}],
+ bmt:[{n:'麦門冬',r:'yin'},{n:'半夏',r:'down'},{n:'人参',r:'qi'},{n:'粳米',r:'qi'},{n:'大棗',r:'qi'},{n:'甘草',r:'qi'}],
+ mot:[{n:'麻黄',r:'release'},{n:'桂枝',r:'release'},{n:'杏仁',r:'down'},{n:'甘草',r:'harmon'}],
+ sbt:[{n:'附子',r:'warm'},{n:'生姜',r:'warm'},{n:'茯苓',r:'water'},{n:'白朮',r:'water'},{n:'芍薬',r:'blood'}],
+ hst:[{n:'半夏',r:'warm'},{n:'乾姜',r:'warm'},{n:'黄芩',r:'cool'},{n:'黄連',r:'cool'},{n:'人参',r:'qi'},{n:'大棗',r:'qi'},{n:'甘草',r:'qi'}],
+ grs:[{n:'沢瀉',r:'water'},{n:'茯苓',r:'water'},{n:'猪苓',r:'water'},{n:'白朮',r:'water'},{n:'桂枝',r:'warm'}],
+ hcet:[{n:'黄耆',r:'qi'},{n:'人参',r:'qi'},{n:'白朮',r:'qi'},{n:'甘草',r:'qi'},{n:'升麻',r:'lift'},{n:'柴胡',r:'lift'},{n:'当帰',r:'blood'},{n:'陳皮',r:'qireg'},{n:'生姜',r:'harmon'},{n:'大棗',r:'harmon'}],
+ jdt:[{n:'人参',r:'qi'},{n:'白朮',r:'qi'},{n:'茯苓',r:'qi'},{n:'甘草',r:'qi'},{n:'黄耆',r:'qi'},{n:'当帰',r:'blood'},{n:'芍薬',r:'blood'},{n:'川芎',r:'blood'},{n:'地黄',r:'blood'},{n:'桂枝',r:'warm'}],
+ nyt:[{n:'人参',r:'qi'},{n:'黄耆',r:'qi'},{n:'白朮',r:'qi'},{n:'茯苓',r:'qi'},{n:'甘草',r:'qi'},{n:'当帰',r:'blood'},{n:'芍薬',r:'blood'},{n:'地黄',r:'blood'},{n:'遠志',r:'calm'},{n:'五味子',r:'calm'},{n:'陳皮',r:'qireg'},{n:'桂枝',r:'warm'}],
+ kkht:[{n:'人参',r:'qi'},{n:'黄耆',r:'qi'},{n:'白朮',r:'qi'},{n:'茯苓',r:'qi'},{n:'甘草',r:'qi'},{n:'当帰',r:'blood'},{n:'竜眼肉',r:'blood'},{n:'酸棗仁',r:'calm'},{n:'遠志',r:'calm'},{n:'木香',r:'qireg'},{n:'山梔子',r:'cool'},{n:'柴胡',r:'cool'},{n:'生姜',r:'harmon'},{n:'大棗',r:'harmon'}],
+ msn:[{n:'麻子仁',r:'yin'},{n:'杏仁',r:'yin'},{n:'芍薬',r:'yin'},{n:'大黄',r:'purge'},{n:'厚朴',r:'qireg'},{n:'枳実',r:'qireg'}],
+ dkt:[{n:'山椒',r:'warm'},{n:'乾姜',r:'warm'},{n:'人参',r:'qi'},{n:'膠飴',r:'harmon'}],
+ krb:[{n:'桂枝',r:'warm'},{n:'芍薬',r:'blood'},{n:'生姜',r:'harmon'},{n:'大棗',r:'harmon'},{n:'甘草',r:'harmon'},{n:'竜骨',r:'calm'},{n:'牡蛎',r:'calm'}],
+ srb:[{n:'柴胡',r:'liver'},{n:'黄芩',r:'cool'},{n:'半夏',r:'down'},{n:'桂枝',r:'warm'},{n:'茯苓',r:'water'},{n:'大黄',r:'purge'},{n:'竜骨',r:'calm'},{n:'牡蛎',r:'calm'},{n:'人参',r:'qi'},{n:'大棗',r:'qi'},{n:'生姜',r:'harmon'}],
+ sct:[{n:'桂枝',r:'warm'},{n:'芍薬',r:'harmon'},{n:'生姜',r:'warm'},{n:'大棗',r:'qi'},{n:'甘草',r:'harmon'},{n:'膠飴',r:'qi'}],
+ jht:[{n:'柴胡',r:'liver'},{n:'防風',r:'release'},{n:'荊芥',r:'release'},{n:'独活',r:'release'},{n:'桔梗',r:'down'},{n:'川芎',r:'blood'},{n:'茯苓',r:'water'},{n:'樸樕',r:'cool'},{n:'生姜',r:'harmon'},{n:'甘草',r:'harmon'}],
+ kss:[{n:'柴胡',r:'liver'},{n:'薄荷',r:'liver'},{n:'当帰',r:'blood'},{n:'芍薬',r:'blood'},{n:'白朮',r:'qi'},{n:'茯苓',r:'qi'},{n:'甘草',r:'qi'},{n:'牡丹皮',r:'cool'},{n:'山梔子',r:'cool'},{n:'生姜',r:'harmon'}],
+ kbg:[{n:'桂枝',r:'warm'},{n:'茯苓',r:'water'},{n:'牡丹皮',r:'stasis'},{n:'桃仁',r:'stasis'},{n:'芍薬',r:'blood'}],
+ tkj:[{n:'桃仁',r:'stasis'},{n:'桂枝',r:'warm'},{n:'大黄',r:'purge'},{n:'芒硝',r:'purge'},{n:'甘草',r:'harmon'}],
+ rmg:[{n:'地黄',r:'yin'},{n:'山茱萸',r:'yin'},{n:'山薬',r:'qi'},{n:'沢瀉',r:'water'},{n:'茯苓',r:'water'},{n:'牡丹皮',r:'cool'}],
+ hdg:[{n:'地黄',r:'yin'},{n:'山茱萸',r:'yin'},{n:'山薬',r:'qi'},{n:'沢瀉',r:'water'},{n:'茯苓',r:'water'},{n:'牡丹皮',r:'cool'},{n:'附子',r:'warm'},{n:'桂皮',r:'warm'}],
+ gjg:[{n:'地黄',r:'yin'},{n:'山茱萸',r:'yin'},{n:'山薬',r:'qi'},{n:'沢瀉',r:'water'},{n:'茯苓',r:'water'},{n:'牡丹皮',r:'cool'},{n:'附子',r:'warm'},{n:'桂皮',r:'warm'},{n:'牛膝',r:'stasis'},{n:'車前子',r:'water'}],
+ hkt:[{n:'半夏',r:'down'},{n:'厚朴',r:'qireg'},{n:'蘇葉',r:'qireg'},{n:'茯苓',r:'water'},{n:'生姜',r:'warm'}],
+ sck:[{n:'当帰',r:'blood'},{n:'芍薬',r:'blood'},{n:'川芎',r:'blood'},{n:'地黄',r:'blood'},{n:'黄耆',r:'qi'},{n:'黄柏',r:'cool'},{n:'釣藤鈎',r:'liver'}],
+ dst:[{n:'柴胡',r:'liver'},{n:'黄芩',r:'cool'},{n:'半夏',r:'down'},{n:'枳実',r:'qireg'},{n:'芍薬',r:'blood'},{n:'大黄',r:'purge'},{n:'生姜',r:'harmon'},{n:'大棗',r:'harmon'}],
+ skt:[{n:'柴胡',r:'liver'},{n:'黄芩',r:'cool'},{n:'半夏',r:'down'},{n:'桂枝',r:'release'},{n:'芍薬',r:'harmon'},{n:'人参',r:'qi'},{n:'大棗',r:'qi'},{n:'生姜',r:'harmon'},{n:'甘草',r:'harmon'}],
+ nnt:[{n:'人参',r:'qi'},{n:'白朮',r:'qi'},{n:'乾姜',r:'warm'},{n:'甘草',r:'harmon'}],
+ ats:[{n:'桂皮',r:'warm'},{n:'良姜',r:'warm'},{n:'茴香',r:'warm'},{n:'延胡索',r:'qireg'},{n:'縮砂',r:'qireg'},{n:'牡蛎',r:'harmon'},{n:'甘草',r:'harmon'}],
+ sry:[{n:'柴胡',r:'liver'},{n:'黄芩',r:'cool'},{n:'半夏',r:'down'},{n:'人参',r:'qi'},{n:'甘草',r:'qi'},{n:'沢瀉',r:'water'},{n:'茯苓',r:'water'},{n:'猪苓',r:'water'},{n:'白朮',r:'water'},{n:'桂枝',r:'warm'},{n:'大棗',r:'harmon'},{n:'生姜',r:'harmon'}],
+ shp:[{n:'柴胡',r:'liver'},{n:'黄芩',r:'cool'},{n:'半夏',r:'down'},{n:'厚朴',r:'qireg'},{n:'蘇葉',r:'qireg'},{n:'茯苓',r:'water'},{n:'人参',r:'qi'},{n:'甘草',r:'qi'},{n:'大棗',r:'harmon'},{n:'生姜',r:'harmon'}],
+ jdi:[{n:'樸樕',r:'stasis'},{n:'川芎',r:'stasis'},{n:'川骨',r:'stasis'},{n:'桂皮',r:'warm'},{n:'丁子',r:'warm'},{n:'大黄',r:'purge'},{n:'甘草',r:'harmon'}],
+ hng:[{n:'桔梗',r:'down'},{n:'枳実',r:'qireg'},{n:'芍薬',r:'blood'},{n:'甘草',r:'harmon'},{n:'生姜',r:'harmon'},{n:'大棗',r:'harmon'}]
+};
+function herbBlock(C){
+ var hs=HERBS[C.id]; if(!hs) return el('div');
+ var order=[],map={};
+ hs.forEach(function(h){if(!map[h.r]){map[h.r]=[];order.push(h.r);}map[h.r].push(h.n);});
+ var rows='';
+ order.forEach(function(r){var R=ROLES[r]||{label:r,c:'#888'};
+  rows+='<div class="herb-row"><span class="herb-role" style="background:'+R.c+'">'+R.label+'</span>'+
+   map[r].map(function(n){return '<span class="herb-chip" style="border-color:'+R.c+';color:'+R.c+'">'+n+'</span>';}).join('')+'</div>';});
+ var box=el('div','herb-box');
+ box.innerHTML='<div class="fig-h">方剤の構成（働き別）― '+C.rxName+'</div>'+rows+
+  '<div class="herb-foot">色は生薬の主な働き。組み合わせ（君臣佐使）でこの症例の証に対応します。</div>';
+ return box;
+}
+/* 舌診・腹診のデータ */
+var TONGUE={
+ tsj:{color:'pale',swollen:true,teeth:true,coat:'thinwhite',cap:'淡白・胖大・歯痕・薄白苔'},
+ kkt:{color:'pink',swollen:false,teeth:false,coat:'thinwhite',cap:'淡紅・薄白苔（やや湿）'},
+ rkk:{color:'pale',swollen:true,teeth:true,coat:'whitewet',cap:'淡白・胖大・歯痕・白い湿った苔'},
+ yks:{color:'pink',swollen:false,teeth:false,coat:'thinwhite',cap:'淡紅〜やや紅・薄苔'},
+ bmt:{color:'red',swollen:false,teeth:false,coat:'scantdry',cap:'やや紅・少苔（乾燥）'},
+ mot:{color:'pink',swollen:false,teeth:false,coat:'thinwhite',cap:'淡紅・薄白苔'},
+ sbt:{color:'pale',swollen:true,teeth:true,coat:'whitewet',cap:'淡白・胖大・湿潤・白滑苔'},
+ hst:{color:'pink',swollen:false,teeth:false,coat:'yellowgreasy',cap:'やや紅・黄白の膩苔（中央）'},
+ grs:{color:'pink',swollen:true,teeth:false,coat:'whitewet',cap:'淡紅・やや胖大・白い湿った苔'},
+ hcet:{color:'pale',swollen:false,teeth:false,coat:'thinwhite',cap:'淡・薄白苔'},
+ jdt:{color:'pale',swollen:false,teeth:false,coat:'thinwhite',cap:'淡白・薄白苔（やや乾）'},
+ nyt:{color:'pale',swollen:false,teeth:false,coat:'thinwhite',cap:'淡白・薄苔（やや乾）'},
+ kkht:{color:'pale',swollen:false,teeth:false,coat:'thinwhite',tip:'red',cap:'淡・舌尖やや紅・薄苔'},
+ msn:{color:'red',swollen:false,teeth:false,coat:'scantdry',cap:'やや乾・少苔'},
+ dkt:{color:'pale',swollen:false,teeth:false,coat:'whitewet',cap:'淡・白い湿った苔'},
+ krb:{color:'pink',swollen:false,teeth:false,coat:'thinwhite',cap:'淡紅・薄白苔'},
+ srb:{color:'red',swollen:false,teeth:false,coat:'yellowgreasy',cap:'やや紅・黄苔ぎみ'},
+ sct:{color:'pale',swollen:false,teeth:false,coat:'thinwhite',cap:'淡・薄白苔'},
+ jht:{color:'red',swollen:false,teeth:false,coat:'yellowgreasy',cap:'やや紅・薄い黄苔'},
+ kss:{color:'red',swollen:false,teeth:false,coat:'thinwhite',cap:'舌辺やや紅・薄苔'},
+ kbg:{color:'purple',swollen:false,teeth:false,coat:'thinwhite',cap:'暗赤・舌下静脈の怒張・瘀斑'},
+ tkj:{color:'purple',swollen:false,teeth:false,coat:'yellowgreasy',cap:'暗赤・黄苔（乾）・瘀斑'},
+ rmg:{color:'red',swollen:false,teeth:false,coat:'scantdry',cap:'紅・少苔（乾）'},
+ hdg:{color:'pale',swollen:true,teeth:false,coat:'whitewet',cap:'淡・やや胖大・白い湿った苔'},
+ gjg:{color:'pale',swollen:true,teeth:false,coat:'whitewet',cap:'淡・胖大・白苔'},
+ hkt:{color:'pink',swollen:false,teeth:false,coat:'thinwhite',cap:'淡紅・白苔（やや湿）'},
+ sck:{color:'pale',swollen:false,teeth:false,coat:'thinwhite',cap:'淡（血虚）・薄苔'},
+ dst:{color:'red',swollen:false,teeth:false,coat:'yellowgreasy',cap:'やや紅・黄苔（乾）'},
+ skt:{color:'pink',swollen:false,teeth:false,coat:'thinwhite',cap:'淡紅・薄白苔'},
+ nnt:{color:'pale',swollen:true,teeth:false,coat:'whitewet',cap:'淡・胖大・白い湿った苔'},
+ ats:{color:'pale',swollen:false,teeth:false,coat:'thinwhite',cap:'淡・薄白苔'},
+ sry:{color:'pink',swollen:false,teeth:false,coat:'whitewet',cap:'やや紅・白い湿った苔'},
+ shp:{color:'pink',swollen:false,teeth:false,coat:'whitewet',cap:'淡紅・白苔（やや湿）'},
+ jdi:{color:'purple',swollen:false,teeth:false,coat:'thinwhite',cap:'やや暗（瘀血）・薄苔'},
+ hng:{color:'red',swollen:false,teeth:false,coat:'yellowgreasy',cap:'やや紅・薄い黄苔'}
+};
+var ABD={
+ tsj:{power:'軟弱',zones:[{key:'sinka',items:[{label:'心下振水音(+)',note:'胃内停水＝水滞'}]}],neg:['少腹急結は明瞭でない']},
+ kkt:{power:'中等度以上',zones:[]},
+ rkk:{power:'軟弱',zones:[{key:'sinka',items:[{label:'心下痞硬（軟）',note:'みぞおちのつかえ'},{label:'心下振水音(+)',note:'胃内停水'}]}]},
+ yks:{power:'中等度',zones:[{key:'rectus',items:[{label:'腹直筋の攣急（左優位）',note:'肝の高ぶり・筋緊張'}]},{key:'saijo',items:[{label:'臍上の拍動を触れる'}]}]},
+ bmt:{power:'中等度',zones:[]},
+ mot:{power:'充実',zones:[]},
+ sbt:{power:'軟弱',zones:[{key:'cold',items:[{label:'腹部の冷感'}]},{key:'sinka',items:[{label:'心下振水音（触れることがある）'}]}]},
+ hst:{power:'中等度',zones:[{key:'sinka',items:[{label:'心下痞硬',note:'つかえと抵抗'}]},{key:'peri',items:[{label:'腹鳴'}]}]},
+ grs:{power:'中等度',zones:[{key:'sinka',items:[{label:'心下振水音'}]}]},
+ hcet:{power:'軟弱',zones:[{key:'saijo',items:[{label:'腹部大動脈の拍動を触れる'}]}],neg:['心窩部に力がない']},
+ jdt:{power:'軟弱',zones:[],neg:['全体に力がない']},
+ nyt:{power:'軟弱',zones:[]},
+ kkht:{power:'軟弱',zones:[]},
+ msn:{power:'やや軟',zones:[],neg:['強い腹満・圧痛はない']},
+ dkt:{power:'軟弱',zones:[{key:'cold',items:[{label:'腹部の冷感'}]},{key:'peri',items:[{label:'腸蠕動の亢進（腹壁から触れる/見える）'}]}]},
+ krb:{power:'軟弱',zones:[{key:'rectus',items:[{label:'腹直筋の緊張'}]},{key:'saijo',items:[{label:'臍上の動悸（臍上悸）の亢進',note:'気の上衝'}]}]},
+ srb:{power:'中等度〜充実',zones:[{key:'kyokyo',items:[{label:'胸脇苦満'}]},{key:'saijo',items:[{label:'臍上悸'}]}]},
+ sct:{power:'軟弱',zones:[{key:'rectus',items:[{label:'腹直筋の拘急（両側）',note:'攣急性の腹痛'}]}]},
+ jht:{power:'中等度',zones:[],neg:['腹部に特記すべき所見なし（病変は皮膚）']},
+ kss:{power:'中等度〜やや軟',zones:[{key:'kyokyo',items:[{label:'軽度の胸脇苦満'}]}]},
+ kbg:{power:'中等度',zones:[{key:'shofuku',items:[{label:'臍傍〜左少腹の抵抗・圧痛',note:'瘀血の腹証'}]}]},
+ tkj:{power:'充実',zones:[{key:'shofuku',items:[{label:'左少腹の強い抵抗・圧痛（少腹急結）',note:'瘀血＋実'}]}]},
+ rmg:{power:'中等度〜やや軟',zones:[{key:'seika',items:[{label:'臍下（腎間）の力に乏しい',note:'腎の弱り'}]}]},
+ hdg:{power:'軟弱',zones:[{key:'seika',items:[{label:'臍下不仁（小腹不仁）',note:'腎虚'}]},{key:'cold',items:[{label:'下腹部・下肢の冷感'}]}]},
+ gjg:{power:'軟弱',zones:[{key:'seika',items:[{label:'臍下不仁'}]},{key:'cold',items:[{label:'下腹部・下肢の冷感'}]}]},
+ hkt:{power:'中等度',zones:[{key:'sinka',items:[{label:'心下〜胸のつかえ感'}]}]},
+ sck:{power:'中等度〜やや軟',zones:[]},
+ dst:{power:'充実',zones:[{key:'kyokyo',items:[{label:'強い胸脇苦満'}]},{key:'sinka',items:[{label:'心下急（心下部の抵抗）'}]}]},
+ skt:{power:'中等度',zones:[{key:'kyokyo',items:[{label:'胸脇苦満（軽〜中）'}]},{key:'rectus',items:[{label:'腹直筋のやや緊張'}]}]},
+ nnt:{power:'軟弱',zones:[{key:'cold',items:[{label:'心窩部の冷感'}]},{key:'sinka',items:[{label:'心窩部のつかえ・心下振水音のことも'}]}]},
+ ats:{power:'軟弱',zones:[{key:'sinka',items:[{label:'心窩部の圧痛・つかえ'}]}]},
+ sry:{power:'中等度',zones:[{key:'kyokyo',items:[{label:'胸脇苦満'}]},{key:'sinka',items:[{label:'心下振水音のことも'}]}]},
+ shp:{power:'中等度',zones:[{key:'kyokyo',items:[{label:'胸脇苦満'}]},{key:'sinka',items:[{label:'心下のつかえ'}]}]},
+ jdi:{power:'中等度',zones:[],neg:['腹部に特記なし（患部は局所の打撲）']},
+ hng:{power:'中等度',zones:[],neg:['腹部に特記なし（患部は局所の化膿巣）']}
+};
+function figuresBlock(C){
+ var tg=TONGUE[C.id]||{color:'pink',coat:'thinwhite',cap:''}, ab=ABD[C.id]||{power:'中等度',zones:[]};
+ var wrap=el('div','fig-row');
+ var tc=el('div','fig-card');
+ tc.innerHTML='<div class="fig-h">舌診</div>'+tongueSVG(tg)+'<div class="fig-cap">'+tg.cap+'</div>';
+ var ac=el('div','fig-card');
+ var n=0,leg='';
+ (ab.zones||[]).forEach(function(z){
+  if(z.key==='cold'){leg+='<div class="leg"><span class="lg-dot" style="background:#3b78b0"></span><span>'+z.items.map(function(it){return it.label;}).join(' / ')+'</span></div>';return;}
+  n++;var col=z.key==='peri'?'#3f7d52':'#b5603f';
+  leg+='<div class="leg"><span class="lg-num" style="background:'+col+'">'+n+'</span><span>'+z.items.map(function(it){return it.label+(it.note?'<span class="lg-note">（'+it.note+'）</span>':'');}).join('<br>')+'</span></div>';
+ });
+ if((ab.zones||[]).length===0) leg+='<div class="leg-none">特記すべき腹証なし</div>';
+ (ab.neg||[]).forEach(function(x){leg+='<div class="leg-neg">－ '+x+'</div>';});
+ ac.innerHTML='<div class="fig-h">腹診（腹力：'+ab.power+'）</div>'+abdomenSVG(ab)+'<div class="fig-legend">'+leg+'</div>';
+ wrap.appendChild(tc);wrap.appendChild(ac);
+ return wrap;
+}
+/* 正解方剤の古典（出典と記載） */
+var CLASSIC={
+ tsj:{src:'『金匱要略』婦人妊娠病・婦人雑病篇',quote:'婦人懐妊し、腹中㽲痛(きゅうつう)するは、当帰芍薬散之を主る。／婦人の腹中諸疾痛は、当帰芍薬散之を主る。',read:'妊婦の腹のしくしくした痛み、また女性の腹部の諸々の痛みを治す。',note:'血を補い水をさばく代表方。冷え・むくみ・月経異常を伴う虚証の女性に。'},
+ kkt:{src:'『傷寒論』太陽病篇',quote:'太陽病、項背強ること几几(きき)、汗無く悪風するは、葛根湯之を主る。',read:'うなじ〜背がこわばり、汗が出ず風を嫌う太陽病に。',note:'無汗の表実（太陽病）の代表方。'},
+ rkk:{src:'四君子湯（『太平恵民和剤局方』）に陳皮・半夏を加えた方。後世（『医学正伝』ほか）に記載',quote:'脾胃虚弱、飲食少なく、気短く痰多く、心腹脹満するを治す。',read:'胃腸が弱く食が細く、もたれや痰を伴うものに。',note:'四君子湯＋二陳湯の構成。脾気虚＋水滞（痰飲）に。'},
+ yks:{src:'『保嬰撮要』（明・薛鎧／薛己）',quote:'肝経の虚熱、発搐(ひきつけ)、あるいは驚悸・寒熱、木 土に乗じて嘔吐・痰涎・腹脹・少食、睡臥安からざるを治す。',read:'もと小児の夜泣き・ひきつけの薬。肝の高ぶりを抑え脾を扶ける。',note:'母子同服で用いられた。現在は認知症のBPSD等にも応用。'},
+ bmt:{src:'『金匱要略』肺痿肺癰咳嗽上気病篇',quote:'大逆上気、咽喉不利、逆を止め気を下す者は、麦門冬湯之を主る。',read:'こみ上げる咳と咽喉の乾き・つかえに。肺胃を潤し気逆を降ろす。',note:'痰の少ない遷延性の乾いた咳に。'},
+ mot:{src:'『傷寒論』太陽病篇',quote:'太陽病、頭痛・発熱、身疼・腰痛、骨節疼痛、悪風し、汗無くして喘する者は、麻黄湯之を主る。',read:'高熱・無汗・強い体の痛み・喘を伴う表実に。',note:'発汗の力が強く、虚弱者や発汗後には用いない。'},
+ sbt:{src:'『傷寒論』少陰病篇（太陽病の変証にも）',quote:'少陰病…腹痛、小便不利、四肢沈重疼痛し、自ら下利する者…此れ水気有りと為す…真武湯之を主る。',read:'冷え・倦怠・めまい・むくみ・水様便を伴う陽虚＋水滞に。',note:'附子を含む。もと玄武湯。'},
+ hst:{src:'『傷寒論』太陽病篇／『金匱要略』',quote:'但だ満ちて痛まざる者、此れを痞と為す…半夏瀉心湯之を主る。／嘔して腸鳴し、心下痞する者は、半夏瀉心湯之を主る。',read:'みぞおちのつかえ（痞）に悪心・腹鳴・下痢を伴う寒熱錯雑に。',note:'辛温（半夏・乾姜）と苦寒（黄芩・黄連）を合わせる。'},
+ grs:{src:'『傷寒論』太陽病篇',quote:'脈浮、小便不利、微熱、消渇する者は、五苓散之を主る。／水を飲めば則ち吐く、名づけて水逆と曰う、五苓散之を主る。',read:'口渇するのに尿が少なく、水を飲むと吐く「水のかたより」に。',note:'太陽蓄水（膀胱の気化失調）。'},
+ hcet:{src:'『内外傷弁惑論』『脾胃論』（李東垣）',quote:'脾胃既に虚し…甘温の剤を以て其の中を補い、其の陽を升らすべし（甘温、大熱を除く）。',read:'倦怠・食欲不振・気の下垂（中気下陥）に、気を補い持ち上げる。',note:'「甘温除大熱」の代表方。医王湯とも。'},
+ jdt:{src:'『太平恵民和剤局方』',quote:'男子・婦人の諸虚不足、五労七傷、飲食進まず…を治す。',read:'術後・病後の気血両虚の全身消耗に、気血をともに補う。',note:'四君子湯＋四物湯＋黄耆・桂枝。'},
+ nyt:{src:'『太平恵民和剤局方』',quote:'積労・虚損、気血不足…を治す。',read:'気血両虚に、咳・息切れ・不眠・健忘などを伴うフレイルに。',note:'十全大補湯から川芎を除き、遠志・五味子・陳皮を加える。'},
+ kkht:{src:'帰脾湯（『済生方』厳用和）＋加味（柴胡・山梔子）（『内科摘要』薛己）',quote:'思慮、心脾を傷り、健忘・怔忡(動悸)・不眠…を治す（帰脾湯）。これに肝の鬱熱を清す薬を加味する。',read:'心脾両虚の不眠・不安・健忘・出血傾向に、軽い熱（いらいら）を清す。',note:'帰脾湯に山梔子・柴胡を加えたもの。'},
+ msn:{src:'『傷寒論』陽明病篇',quote:'趺陽の脈、浮にして濇(しょく)、…其れ脾約と為す、麻子仁丸之を主る。',read:'腸が乾いて便が硬くなる（脾約）虚証の便秘に。',note:'潤腸薬に小承気を小量配し、穏やかに通じる。'},
+ dkt:{src:'『金匱要略』腹満寒疝宿食病篇',quote:'心胸中 大いに寒えて痛み、嘔して飲食する能わず、腹中寒え、上りて皮起こり、頭足有るを見、上下痛みて触近すべからざるは、大建中湯之を主る。',read:'腹が強く冷えて張り、腸の動きが腹壁に浮き出るような腹痛に。',note:'山椒・乾姜・人参・膠飴。中焦を強く温める。'},
+ krb:{src:'『金匱要略』血痺虚労病篇',quote:'失精家、少腹弦急、陰頭寒え、目眩み、髪落ち、脈極めて虚芤遅(きょこうち)…男子は失精、女子は夢交す、桂枝加竜骨牡蛎湯之を主る。',read:'虚弱・神経過敏で動悸・遺精・のぼせ足冷を伴うものに。',note:'桂枝湯＋竜骨・牡蛎（重鎮安神）。'},
+ srb:{src:'『傷寒論』太陽病篇',quote:'傷寒八九日、之を下し、胸満・煩驚、小便不利、譫語(せんご)、一身尽く重く、転側すべからざる者は、柴胡加竜骨牡蛎湯之を主る。',read:'胸の苦しさ・驚きやすさ・不眠・便通異常を伴う実証寄りの精神不安に。',note:'小柴胡湯の変方に竜骨・牡蛎ほかを加える。'},
+ sct:{src:'『傷寒論』『金匱要略』',quote:'傷寒、陽脈濇、陰脈弦、法として当に腹中急痛すべし、先ず小建中湯を与う。／虚労 裏急、悸・衄・腹中痛…小建中湯之を主る。',read:'虚弱で腹が引きつれて痛むものに。中焦を建て攣急を緩める。',note:'桂枝加芍薬湯＋膠飴。'},
+ jht:{src:'華岡青洲の創方（江戸）。荊防敗毒散（『摂生衆妙方』）を基に改変',quote:'（経験方のため古典の条文はない）癰疽・瘡瘍・諸瘡の初期、発赤・腫脹するものに用いる。',read:'化膿性皮膚疾患・急性湿疹の初期に、去風・排膿・解毒する。',note:'日本で生まれた経験方。'},
+ kss:{src:'逍遙散（『太平恵民和剤局方』）に牡丹皮・山梔子を加味（『内科摘要』薛己）',quote:'血虚労倦、五心煩熱、…月経不調を治す（逍遙散）。これに熱を清す牡丹皮・山梔子を加える。',read:'血虚＋肝鬱に熱（のぼせ・いらいら）を伴う女性の不定愁訴に。',note:'別名・八味逍遙散。'},
+ kbg:{src:'『金匱要略』婦人妊娠病篇',quote:'婦人、宿(もと)癥病(ちょうびょう)有り…血止まざる所以の者は、其の癥去らざる故なり、当に其の癥を下すべし、桂枝茯苓丸之を主る。',read:'下腹部の塊（瘀血）を伴う月経異常などに、活血化瘀する。',note:'比較的体力のある瘀血に。'},
+ tkj:{src:'『傷寒論』太陽病篇（蓄血）',quote:'太陽病 解せず、熱 膀胱に結び、其の人 狂の如く…但だ少腹急結する者は…桃核承気湯之を主る。',read:'瘀血に便秘・のぼせ・精神症状を伴う実証（蓄血）に。',note:'桃仁・桂枝＋調胃承気。活血＋瀉下。'},
+ rmg:{src:'『小児薬証直訣』（銭乙）',quote:'地黄丸…腎怯(じんきょう＝腎の虚)、（小児の）発育の遅れ等を治す。（『金匱』の腎気丸より桂・附を去る）',read:'冷えのない腎陰虚（ほてり・腰膝・口渇）に、腎陰を補う。',note:'もと小児の腎虚の薬。六味地黄丸。'},
+ hdg:{src:'『金匱要略』（虚労・痰飲・消渇・婦人雑病ほか）',quote:'虚労、腰痛、少腹拘急、小便不利する者は、八味腎気丸之を主る。',read:'腎陽虚（下肢の冷え・腰痛・夜間頻尿）に、補腎＋温陽する。',note:'腎気丸／崔氏八味丸とも。'},
+ gjg:{src:'『済生方』（厳用和）の加味腎気丸',quote:'腎虚、腰重く脚腫れ、小便不利するを治す（八味丸に牛膝・車前子を加う）。',read:'腎陽虚に下肢の痛み・しびれ・むくみを伴うものに。',note:'八味地黄丸＋牛膝・車前子。'},
+ hkt:{src:'『金匱要略』婦人雑病篇',quote:'婦人、咽中に炙臠(しゃれん＝あぶり肉)有るが如きは、半夏厚朴湯之を主る。',read:'のどの異物感（梅核気）・気のふさぎに、気をめぐらせる。',note:'いわゆる咽喉頭異常感・ヒステリー球に。'},
+ sck:{src:'大塚敬節の創方（昭和）。四物湯を基に黄耆・黄柏・釣藤鈎を加える',quote:'（現代の経験方）最低血圧の高い者の、のぼせ・肩こり・耳鳴り等に用いる。',read:'血虚を背景にした（拡張期）高血圧の随伴症状に。',note:'大塚敬節が自身の高血圧の経験から創案した。'},
+ dst:{src:'『傷寒論』『金匱要略』',quote:'傷寒、発熱…心中痞硬、嘔吐して下利する者は、大柴胡湯之を主る。',read:'胸脇苦満・便秘・上腹部の張りを伴う実証（少陽陽明）に。',note:'柴胡剤に大黄・枳実を加えて瀉下する。'},
+ skt:{src:'『傷寒論』『金匱要略』',quote:'傷寒六七日、発熱・微悪寒、支節煩疼、微嘔、心下支結し、外証 未だ去らざる者は、柴胡桂枝湯之を主る。',read:'こじれた感冒（表証の名残＋少陽）に。',note:'小柴胡湯＋桂枝湯の合方。'},
+ nnt:{src:'『傷寒論』（霍乱病）／『金匱要略』（胸痺）',quote:'霍乱…寒多く水を用いざる者は、理中丸(湯)之を主る。／胸痺、心中痞す…人参湯之を主る。',read:'脾胃の虚寒（胃の冷え・もたれ・下痢）に、中を温め補う。',note:'理中丸（湯）と同方。'},
+ ats:{src:'『太平恵民和剤局方』',quote:'遠年・日近の脾疼・翻胃、口に酸水を吐く…を治す。',read:'冷え性・やせ型の慢性胃痛・胸やけ（神経性胃炎）に。',note:'胃を温め痛みを止め、酸を制す。'},
+ sry:{src:'小柴胡湯（『傷寒論』）＋五苓散（『傷寒論』）の合方',quote:'（合方）少陽の熱と水滞をともに治す。口渇・小便不利を伴う泄瀉・浮腫に。',read:'胸脇苦満を伴う水滞（嘔吐下痢・むくみ・炎症）に。',note:'後世に「柴苓湯」として用いられる合方。'},
+ shp:{src:'小柴胡湯（『傷寒論』）＋半夏厚朴湯（『金匱要略』）の合方',quote:'（合方）胸脇苦満と気鬱・痰をともに治す。',read:'胸脇苦満を伴う咳・痰・咽喉異物感・不安（気管支喘息等）に。',note:'後世の合方。'},
+ jdi:{src:'香川修庵（修徳）の創方（江戸『一本堂行余医言』ほか）',quote:'（経験方）打撲・捻挫による腫脹・疼痛・皮下出血を治す。',read:'外傷後の腫れ・痛み・あざ（局所の瘀血）に。',note:'日本で生まれた打撲の専用方。'},
+ hng:{src:'『金匱要略』瘡癰腸癰浸淫病篇（排膿散・排膿湯）を合方',quote:'（排膿散・排膿湯を合方）化膿巣の排膿・消腫・止痛に用いる。',read:'限局した化膿巣（はれもの・面疔・ものもらい等）に。',note:'『金匱』の排膿散＋排膿湯。後世に合方として使用。'}
+};
+var MODERN={
+ tsj:'妊娠中や月経のころに、お腹がしくしく・キューッと痛む——とくに冷え・むくみ・立ちくらみを伴う、やせ型で血色のよくない女性を想定した条文です。「血の不足＋水のとどこおり」を補い調えるイメージ。',
+ kkt:'かぜのひき始めで、首・肩・後頭部がガチガチにこり、汗は出ず、ゾクッと寒気がする——「まだ汗をかいていない、体力のある人」の状態。早めに飲んで汗を出し、邪を追い払います。',
+ rkk:'胃腸が弱く食が細い人が、少し食べるとすぐもたれて張り、痰っぽさや疲れを伴う——機能性ディスペプシアの「食欲が出ない・もたれる」タイプ。胃腸の力を底上げしつつ、たまった水分（痰飲）をさばきます。',
+ yks:'もとは「子どもの夜泣き・ひきつけ」の薬。神経が高ぶってイライラ・興奮・手のふるえ・不眠が出て、当たり散らしたり食が細くなる状態を指します。高ぶった神経（肝）を鎮め、弱った胃腸（脾）を支える——認知症の興奮・易怒（BPSD）にも応用されます。',
+ bmt:'のどが乾いてイガイガし、こみ上げるように激しく咳き込む——痰の少ない、こじれて長引く乾いた咳。のどと気道のうるおいを補い、突き上げる咳を鎮めます。',
+ mot:'急な高熱、全身の関節・腰のズキズキ、汗は出ずゼーゼーする——インフルエンザ初期のような、体力のある人の強いかぜ。強めに汗を出して一気に追い払います。',
+ sbt:'高齢者などで全身が冷えてぐったり、立つとふらつき、水様便やむくみ、尿が出にくい——体を温める力が落ち、水をさばけずにたまった状態。温めながら余分な水を出します。',
+ hst:'みぞおちが「痛くはないがつかえて張る」、吐き気・げっぷ、お腹がゴロゴロ鳴って下しやすい——ストレスや暴飲暴食で悪化する胃腸症。冷え（下痢）と熱（口の苦み）が混じるタイプに。',
+ grs:'のどが渇いて水を飲むのに尿は出ず、飲むとかえって吐く、頭痛やむくみも——胃腸炎の脱水、二日酔い、むくみ、乗り物酔いなど「水の偏り」。水の通りを整えて偏りを正します。',
+ hcet:'全身がだるく気力が出ない、食欲がなく、すぐ風邪をひく、内臓が下がる感じ——夏バテ・病後・高齢の「気力・体力の底が抜けた」状態。元気（気）を補い、下がった力を引き上げます。',
+ jdt:'手術や抗がん剤のあとなどで、疲れ・貧血気味・顔色不良・冷え・肌の乾燥が続く——気も血も両方消耗した状態。気と血をまとめて補って立て直します。',
+ nyt:'気血の消耗に加えて、咳・息切れ・不眠・物忘れ・気分の落ち込みを伴う——COPDやがん療養中のフレイル。気血を補いながら、呼吸器と心（精神）も支えます。',
+ kkht:'くよくよ考えて眠れず不安、疲れやすく食欲も落ち、物忘れやあざ・出血しやすさ、軽いほてり——心労による不眠・抑うつ。心と胃腸を補い、軽い熱（いらいら）を冷まします。',
+ msn:'高齢者などで便がコロコロ硬く、強くいきまないと出ない、口や肌も乾きがち——腸が乾いて硬くなる虚弱タイプの便秘。腸をうるおしながら穏やかに通じさせます。',
+ dkt:'お腹が芯から冷えて張り、腸がうねるのが分かるほど動いて痛み、ガスが出ない——腹部術後の腸の動きの低下・癒着傾向など。お腹を強く温めて動きを整えます。',
+ krb:'やせて神経質な人が、動悸・不眠・寝汗・遺精があり、のぼせる一方で足は冷える——過敏で消耗しやすい体質。浮ついた神経を鎮め、心身のバランスを整えます。',
+ srb:'体力のある人が、イライラ・不眠・動悸があり、ちょっとした物音に驚く、便秘や血圧高め——ストレス過多で気が高ぶった状態。たかぶりを抑えて落ち着かせます。',
+ sct:'虚弱な子ども（や大人）が、繰り返しお腹を痛がり、疲れやすく顔色が悪い、夜尿も——「お腹が弱くて緊張しやすい」体質。お腹を甘く温めて力をつけ、引きつれを緩めます。',
+ jht:'赤く腫れて痒い湿疹やおできが、あちこちにでき化膿しかける——急性の湿疹・じんましん・化膿性皮膚炎の出始め。たまった毒・湿・熱を発散して散らします。',
+ kss:'中年女性に多い、のぼせ・イライラ・肩こり・不眠・疲れが日替わりで変化する不定愁訴——更年期症状やPMSなど。血を補い、滞った気をめぐらせ、こもった熱を冷まします。',
+ kbg:'月経痛が強く塊が出る、のぼせるのに足は冷える、肩こりやしみ——いわゆる「血のめぐりの滞り（瘀血）」。比較的体力のある人の、滞った血を動かします。',
+ tkj:'月経前にのぼせて頭痛・イライラが強く、ひどい便秘と下腹部の張り——瘀血に熱と便秘が重なった体力のあるタイプ。滞った血と熱を、便と一緒に下して抜きます。',
+ rmg:'冷えはないのに、腰や膝がだるく、手足がほてって寝汗・口の渇きがある——加齢などで体のうるおい（腎の陰）が減った状態。うるおいを補います。',
+ hdg:'腰や下半身が冷えてだるく、夜に何度もトイレに起き、下半身に力が入らない——加齢で体を温める力（腎の陽）が落ちた状態。補いながら温めます。',
+ gjg:'八味地黄丸の状態に加えて、足のしびれ・痛み・むくみが目立つ——糖尿病性神経障害や下肢の冷え・しびれなど。補い温めつつ、下肢の水と血のめぐりを助けます。',
+ hkt:'のどに何か（あぶり肉のような塊）が引っかかった感じが、飲んでも吐いても取れない——ストレス由来の「のどのつかえ（ヒステリー球）」・不安。滞った気をめぐらせて晴らします。',
+ sck:'疲れやすく顔色のさえない人の、最低（拡張期）血圧が高めで、のぼせ・肩こり・耳鳴り——血の不足を伴う高血圧の随伴症状。血を補いながらのぼせ・頭重を抑えます（降圧薬の補助）。',
+ dst:'がっしり・肥満傾向の人が、みぞおち〜わき腹が強く張って苦しく、便秘・口の苦み——ストレス・脂質異常・胆石などを背景にした実証。詰まりを疏らしつつ便で下ろします。',
+ skt:'かぜが1週間ほど長引き、微熱と寒気・うっすら汗、吐き気・食欲不振、わき腹の張りが残る——こじれてきた亜急性期のかぜ。表に残る邪と、半ばに入った邪を同時に治します。',
+ nnt:'胃のあたりが冷えて重く、食欲がなく、冷たい物で下し、薄い唾がたまる——胃腸が冷えて働かない体質（虚弱・冷え性）。お腹を温めて胃腸の力を補います。',
+ ats:'やせ型・冷え性の人の、空腹時に痛む胃、胸やけ・げっぷ、ストレスで悪化、甘い物が欲しくなる——神経性胃炎・慢性胃炎タイプ。胃を温めて痛みと酸を抑えます。',
+ sry:'わき腹の張りと微熱を伴いつつ、下痢・吐き気、口は渇くのに尿が少なくむくむ——炎症性の胃腸炎やむくみ。半ばに入った邪を捌きながら、水の偏りを整えます。',
+ shp:'のどのつかえ・気分のふさぎに、咳・痰・わき腹の張りが加わり、ストレスや天候で喘鳴ぎみ——気管支喘息や長引く咳に心因が関与する状態。気の滞りと痰を捌きつつ和解します。',
+ jdi:'ぶつけたり捻ったりした後の、腫れ・痛み・青あざ——打撲・捻挫の「血のかたまり（瘀血）」。滞った血を動かして腫れと痛みを引かせます。',
+ hng:'一か所が赤く腫れて痛み、膿をもったおでき（癤・ものもらい・歯ぐきの腫れなど）——限局した化膿巣。膿を出し、腫れと痛みを鎮めます。'
+};
+function classicBlock(C){
+ var c=CLASSIC[C.id]; if(!c) return el('div');
+ var box=el('div','classic-box');
+ var html='<div class="fig-h">古典の出典と記載 ― '+C.rxName+'</div>'+
+  '<div class="cl-src">出典：<b>'+c.src+'</b></div>'+
+  '<blockquote class="cl-quote">'+c.quote+'</blockquote>';
+ if(c.read) html+='<div class="cl-read">〔大意〕'+c.read+'</div>';
+ var m=MODERN[C.id]; if(m) html+='<div class="cl-modern"><span class="cl-tag">現代風の説明</span>'+m+'</div>';
+ if(c.note) html+='<div class="cl-note">'+c.note+'</div>';
+ box.innerHTML=html;
+ return box;
+}
+
+/* 患者アバター・寒熱トーン */
+var TONE={cold:{c:'#3b78b0',label:'冷えが目立つ'},heat:{c:'#b1492f',label:'熱・ほてりが関与'},acute:{c:'#d2802a',label:'急性の発熱'},neutral:{c:'#9a8f7a',label:'寒熱に大きな偏りなし'}};
+var META={
+ tsj:{s:'F',a:42,t:'cold'}, kkt:{s:'M',a:28,t:'acute'}, rkk:{s:'F',a:55,t:'cold'},
+ yks:{s:'M',a:80,t:'heat'}, bmt:{s:'F',a:48,t:'heat'}, mot:{s:'M',a:25,t:'acute'},
+ sbt:{s:'M',a:72,t:'cold'}, hst:{s:'M',a:45,t:'neutral'}, grs:{s:'F',a:30,t:'neutral'},
+ hcet:{s:'F',a:60,t:'neutral'}, jdt:{s:'F',a:65,t:'cold'}, nyt:{s:'M',a:70,t:'cold'},
+ kkht:{s:'F',a:50,t:'heat'}, msn:{s:'F',a:78,t:'neutral'}, dkt:{s:'M',a:68,t:'cold'},
+ krb:{s:'M',a:35,t:'neutral'}, srb:{s:'M',a:50,t:'heat'}, sct:{s:'M',a:9,t:'cold'},
+ jht:{s:'F',a:30,t:'heat'}, kss:{s:'F',a:45,t:'heat'}, kbg:{s:'F',a:40,t:'neutral'},
+ tkj:{s:'F',a:38,t:'heat'}, rmg:{s:'M',a:60,t:'heat'}, hdg:{s:'M',a:68,t:'cold'},
+ gjg:{s:'M',a:72,t:'cold'}, hkt:{s:'F',a:40,t:'neutral'}, sck:{s:'M',a:58,t:'neutral'},
+ dst:{s:'M',a:52,t:'heat'}, skt:{s:'M',a:35,t:'acute'}, nnt:{s:'F',a:50,t:'cold'},
+ ats:{s:'F',a:38,t:'cold'}, sry:{s:'F',a:45,t:'neutral'}, shp:{s:'F',a:42,t:'neutral'},
+ jdi:{s:'M',a:30,t:'neutral'}, hng:{s:'M',a:28,t:'heat'}
+};
+function avatarSVG(m){
+ var col=(TONE[m.t]||TONE.neutral).c;
+ var hair=m.s==='F'
+  ?'<path d="M22 40 Q20 16 40 16 Q60 16 58 40 Q58 30 40 30 Q22 30 22 40 Z" fill="#5b4a37"/><path d="M22 40 L20 56 M58 40 L60 56" stroke="#5b4a37" stroke-width="5" stroke-linecap="round"/>'
+  :'<path d="M24 34 Q24 16 40 16 Q56 16 56 34 Q50 26 40 26 Q30 26 24 34 Z" fill="#5b4a37"/>';
+ return '<svg viewBox="0 0 80 80" width="56" height="56"><circle cx="40" cy="40" r="37" fill="#fff" stroke="'+col+'" stroke-width="3"/><path d="M18 72 Q18 50 40 50 Q62 50 62 72 Z" fill="#d9c3a5"/><circle cx="40" cy="36" r="15" fill="#ecceac"/>'+hair+'</svg>';
+}
+function patientCard(C){
+ var m=META[C.id]||{s:'F',a:0,t:'neutral'}, tn=TONE[m.t]||TONE.neutral;
+ var d=el('div','patient-card');
+ d.innerHTML='<div class="pc-ava">'+avatarSVG(m)+'<div class="pc-meta">'+(m.s==='F'?'♀':'♂')+' '+m.a+'歳</div></div>'+
+  '<div class="pc-body"><div class="pc-top"><span class="who">症例</span><span class="tone-chip" style="background:'+tn.c+'">'+tn.label+'</span></div>'+C.patient+'</div>';
+ return d;
+}
+/* スコアゲージ */
+function scoreGauge(s,total){
+ var r=52,CC=2*Math.PI*r,off=CC*(1-s/total);
+ var col=s===total?'#3f7d52':(s>=4?'#a8753f':'#b1492f');
+ return '<svg viewBox="0 0 140 140" width="138" height="138">'+
+  '<circle cx="70" cy="70" r="52" fill="none" stroke="#e7ddcb" stroke-width="12"/>'+
+  '<circle cx="70" cy="70" r="52" fill="none" stroke="'+col+'" stroke-width="12" stroke-linecap="round" stroke-dasharray="'+CC.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 70 70)"/>'+
+  '<text x="70" y="68" text-anchor="middle" font-size="32" font-weight="800" fill="'+col+'">'+s+'</text>'+
+  '<text x="70" y="92" text-anchor="middle" font-size="14" fill="#544c3d">/ '+total+'</text></svg>';
+}
+
+/* ============ エンジン ============ */
+const STEPS=["導入","問診","四診","証の診断","方剤選択","まとめ"];
+let cur=0, C=null, S=null;
+
+/* 進捗・記録（localStorage） */
+var LSP='kampo_progress_v1', LSS='kampo_stats_v1', LSN='kampo_name_v1';
+function loadProg(){try{return JSON.parse(localStorage.getItem(LSP))||{};}catch(e){return {};}}
+function saveProg(p){try{localStorage.setItem(LSP,JSON.stringify(p));}catch(e){}}
+function loadStats(){try{return JSON.parse(localStorage.getItem(LSS))||{};}catch(e){return {};}}
+function saveStats(s){try{localStorage.setItem(LSS,JSON.stringify(s));}catch(e){}}
+function recordResult(s){
+  var prog=loadProg(); var prev=prog[C.id]||{best:-1,done:false};
+  prog[C.id]={best:Math.max(prev.best,s),done:true}; saveProg(prog);
+  var st=loadStats();
+  function bump(cat,ok){st[cat]=st[cat]||{att:0,miss:0};st[cat].att++;if(!ok)st[cat].miss++;}
+  bump('舌診',S.tongue===1);
+  var names=['気血水','八綱','六病位','五臓'];
+  (S.axisResults||[]).forEach(function(ok,i){bump(names[i],!!ok);});
+  bump('方剤',!!S.rxCorrect); saveStats(st);
+}
+function starStr(n){var full=Math.round(n/6*5),o='';for(var i=0;i<5;i++)o+=(i<full?'★':'☆');return o;}
+
+/* メニュー描画 */
+function renderMenu(){
+  var prog=loadProg();
+  var done=CASES.filter(function(c){return prog[c.id]&&prog[c.id].done;}).length;
+  var perfect=CASES.filter(function(c){return prog[c.id]&&prog[c.id].best===6;}).length;
+  var pct=Math.round(done/CASES.length*100);
+  var mp=document.getElementById('menu-progress');
+  var html='<div class="prog-head"><b>学習の進み具合</b><span>'+done+' / '+CASES.length+' 症例クリア（満点 '+perfect+'）</span></div>'+
+    '<div class="prog-track"><div class="prog-fill" style="width:'+pct+'%"></div></div>'+
+    '<div class="prog-btns">'+
+      '<button class="mini-btn" id="btn-weak">習熟度を見る</button>'+
+      '<button class="mini-btn" id="btn-badge">称号バッジ</button>'+
+      '<button class="mini-btn" id="btn-review">復習モード</button>'+
+      (done===CASES.length?'<button class="mini-btn gold" id="btn-cert">修了証を表示</button>':'')+
+      '<button class="mini-btn ghost" id="btn-reset">記録をリセット</button>'+
+    '</div><div id="weak-panel"></div>';
+  mp.innerHTML=html;
+  var grid=document.getElementById('case-grid'); grid.innerHTML='';
+  CASES.forEach(function(c,i){
+    var p=prog[c.id], badge;
+    if(p&&p.done) badge=p.best===6?'<span class="cc-badge gold">★ 満点</span>':'<span class="cc-badge"><span class="cc-stars">'+starStr(p.best)+'</span> '+p.best+'/6</span>';
+    else badge='<span class="cc-badge none">未挑戦</span>';
+    var b=document.createElement('button'); b.className='case-card'+(p&&p.done?' is-done':'');
+    b.innerHTML='<div class="cc-top"><span class="dom">'+c.domain+'</span>'+badge+'</div><h3>'+c.title+'</h3><p>'+c.sub+'</p><div class="rx-tag">学べる方剤：'+c.rxName+'</div>';
+    b.onclick=function(){openCase(i);};
+    grid.appendChild(b);
+  });
+  document.getElementById('btn-weak').onclick=showMastery;
+  document.getElementById('btn-badge').onclick=openBadges;
+  document.getElementById('btn-review').onclick=openReview;
+  document.getElementById('btn-reset').onclick=resetProg;
+  if(done===CASES.length) document.getElementById('btn-cert').onclick=showCert;
+}
+function statCtx(){
+  var prog=loadProg(), st=loadStats();
+  var cats=['舌診','気血水','八綱','六病位','五臓','方剤'], cat={};
+  cats.forEach(function(k){var d=st[k]||{att:0,miss:0};cat[k]=d.att-d.miss;});
+  var done=CASES.filter(function(c){return prog[c.id]&&prog[c.id].done;}).length;
+  var perfect=CASES.filter(function(c){return prog[c.id]&&prog[c.id].best===6;}).length;
+  return {prog:prog,st:st,cat:cat,cats:cats,done:done,perfect:perfect};
+}
+function masteryTier(c){
+  if(c>=15)return{lv:5,name:'達人',cur:15,next:15};
+  if(c>=10)return{lv:4,name:'上級',cur:10,next:15};
+  if(c>=6)return{lv:3,name:'中級',cur:6,next:10};
+  if(c>=3)return{lv:2,name:'初級',cur:3,next:6};
+  if(c>=1)return{lv:1,name:'入門',cur:1,next:3};
+  return{lv:0,name:'未着手',cur:0,next:1};
+}
+function showMastery(){
+  var wp=document.getElementById('weak-panel');
+  if(wp.getAttribute('data-mode')==='mastery'){wp.innerHTML='';wp.removeAttribute('data-mode');return;}
+  var x=statCtx();
+  var rows=x.cats.map(function(k){
+    var c=x.cat[k], t=masteryTier(c), d=x.st[k]||{att:0,miss:0};
+    var stars=''; for(var i=0;i<5;i++)stars+='<span class="ms-star'+(i<t.lv?' on':'')+'">★</span>';
+    var p=t.lv>=5?100:Math.round((c-t.cur)/(t.next-t.cur)*100);
+    var nextTxt=t.lv>=5?'最上級に到達':('次の段階まで あと '+(t.next-c)+' 問');
+    var acc=d.att?Math.round((d.att-d.miss)/d.att*100)+'%':'—';
+    return '<div class="ms-row"><div class="ms-top"><span class="ms-lab">'+k+'</span><span class="ms-stars">'+stars+'</span><span class="ms-lv">'+t.name+'</span></div>'+
+      '<div class="ms-track"><div class="ms-fill" style="width:'+p+'%"></div></div>'+
+      '<div class="ms-meta">正答 '+c+' 問・正答率 '+acc+'　<span class="ms-next">'+nextTxt+'</span></div></div>';
+  }).join('');
+  wp.innerHTML='<div class="weak-h">習熟度マップ（正答を重ねるほど育ちます）</div>'+rows+'<div class="weak-foot">星と段階は、その軸で正解した累計問題数で伸びます（入門→初級→中級→上級→達人）。</div>';
+  wp.setAttribute('data-mode','mastery');
+}
+var BADGES=[
+ {id:'b1',name:'初学者',cond:'1症例クリア',test:function(c){return c.done>=1;}},
+ {id:'b2',name:'研鑽',cond:'10症例クリア',test:function(c){return c.done>=10;}},
+ {id:'b3',name:'半ばを越えて',cond:'18症例クリア',test:function(c){return c.done>=18;}},
+ {id:'b4',name:'全症例制覇',cond:'35症例すべてクリア',test:function(c){return c.done>=CASES.length;}},
+ {id:'b5',name:'皆伝',cond:'全症例で満点',test:function(c){return c.perfect>=CASES.length;}},
+ {id:'b6',name:'満点十番',cond:'満点を10症例',test:function(c){return c.perfect>=10;}},
+ {id:'b7',name:'気血水の心得',cond:'気血水を10問正解',test:function(c){return c.cat['気血水']>=10;}},
+ {id:'b8',name:'八綱の心得',cond:'八綱を10問正解',test:function(c){return c.cat['八綱']>=10;}},
+ {id:'b9',name:'六病位の心得',cond:'六病位を10問正解',test:function(c){return c.cat['六病位']>=10;}},
+ {id:'b10',name:'五臓の心得',cond:'五臓を10問正解',test:function(c){return c.cat['五臓']>=10;}},
+ {id:'b11',name:'方剤選択の達人',cond:'方剤選択を15問正解',test:function(c){return c.cat['方剤']>=15;}},
+ {id:'b12',name:'望舌の達人',cond:'舌診を10問正解',test:function(c){return c.cat['舌診']>=10;}},
+ {id:'b13',name:'婦人科の証',cond:'当帰芍薬散・加味逍遙散・桂枝茯苓丸・桃核承気湯をクリア',test:function(c){return ['tsj','kss','kbg','tkj'].every(function(id){return c.prog[id]&&c.prog[id].done;});}},
+ {id:'b14',name:'腎を診る',cond:'六味丸・八味地黄丸・牛車腎気丸をクリア',test:function(c){return ['rmg','hdg','gjg'].every(function(id){return c.prog[id]&&c.prog[id].done;});}},
+ {id:'b15',name:'柴胡剤の使い手',cond:'柴胡加竜骨牡蛎湯・大柴胡湯・柴胡桂枝湯・柴苓湯・柴朴湯をクリア',test:function(c){return ['srb','dst','skt','sry','shp'].every(function(id){return c.prog[id]&&c.prog[id].done;});}}
+];
+function openBadges(){
+  var wp=document.getElementById('weak-panel');
+  if(wp.getAttribute('data-mode')==='badge'){wp.innerHTML='';wp.removeAttribute('data-mode');return;}
+  var x=statCtx(), earned=0;
+  var cards=BADGES.map(function(b){var got=false;try{got=b.test(x);}catch(e){got=false;} if(got)earned++;
+    return '<div class="badge'+(got?' got':'')+'"><div class="badge-seal">'+(got?'認':'？')+'</div><div class="badge-name">'+b.name+'</div><div class="badge-cond">'+b.cond+'</div></div>';
+  }).join('');
+  wp.innerHTML='<div class="weak-h">称号バッジ（獲得 '+earned+' / '+BADGES.length+'）</div><div class="badge-grid">'+cards+'</div><div class="weak-foot">学習を進めると条件を満たしたバッジが点灯します。</div>';
+  wp.setAttribute('data-mode','badge');
+}
+function openReview(){
+  var wp=document.getElementById('weak-panel');
+  if(wp.getAttribute('data-mode')==='review'){wp.innerHTML='';wp.removeAttribute('data-mode');return;}
+  var prog=loadProg();
+  var todo=CASES.filter(function(c){var p=prog[c.id];return !p||!p.done||p.best<6;});
+  if(todo.length===0){wp.innerHTML='<div class="weak-empty">全症例で満点です。素晴らしい！</div>';wp.setAttribute('data-mode','review');return;}
+  var items=todo.map(function(c){var i=CASES.indexOf(c);var p=prog[c.id];var sc=(p&&p.done)?p.best+'/6':'未挑戦';
+    return '<button class="rev-item" data-i="'+i+'"><span>'+c.title+'（'+c.rxName+'）</span><span class="rev-sc">'+sc+'</span></button>';}).join('');
+  wp.innerHTML='<div class="weak-h">復習するとよい症例（満点未満）</div><div class="rev-list">'+items+'</div>';
+  wp.setAttribute('data-mode','review');
+  wp.querySelectorAll('.rev-item').forEach(function(b){b.onclick=function(){openCase(+b.getAttribute('data-i'));};});
+}
+function resetProg(){
+  if(confirm('学習の記録（進捗・スコア・苦手集計）を消去します。よろしいですか？')){
+    try{localStorage.removeItem(LSP);localStorage.removeItem(LSS);}catch(e){}
+    renderMenu();
+  }
+}
+function showCert(){
+  var name=(localStorage.getItem(LSN)||'').replace(/"/g,'&quot;');
+  var d=new Date(), ds=d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';
+  var prog=loadProg(), perfect=CASES.filter(function(c){return prog[c.id]&&prog[c.id].best===6;}).length;
+  document.getElementById('menu').style.display='none';
+  document.getElementById('tutorial').style.display='none';
+  var cs=document.getElementById('cert'); cs.style.display='block';
+  cs.innerHTML='<div class="cert-card">'+
+    '<div class="cert-seal">修<br>了</div>'+
+    '<div class="cert-title">修 了 証</div>'+
+    '<div class="cert-sub">漢方診療チュートリアル ― 医療面接から方剤選択まで</div>'+
+    '<div class="cert-name-line">氏名 <input id="cert-name" class="cert-input" placeholder="お名前を入力" value="'+name+'"></div>'+
+    '<div class="cert-body">上記の者は、全'+CASES.length+'症例の学習を修了しました（うち満点 '+perfect+' 症例）。<br>問診・四診から証の組み立て、方剤選択にいたる一連の漢方診療プロセスを修めたことを証します。</div>'+
+    '<div class="cert-date">'+ds+'</div>'+
+    '<div class="cert-foot">Kampo Clinical Reasoning Tutorial</div></div>'+
+    '<div class="actions"><button class="btn ghost" id="cert-back">☰ メニューへ</button><button class="btn" id="cert-print">印刷 / PDF保存</button></div>';
+  document.getElementById('cert-name').oninput=function(){try{localStorage.setItem(LSN,this.value);}catch(e){}};
+  document.getElementById('cert-back').onclick=function(){cs.style.display='none';toMenu();};
+  document.getElementById('cert-print').onclick=function(){window.print();};
+}
+renderMenu();
+
+const prog=document.getElementById('progress');
+STEPS.forEach((s,i)=>{const d=document.createElement('span');d.className='seg';d.id='seg'+i;d.textContent=(i+1)+". "+s;prog.appendChild(d);});
+function renderProg(){STEPS.forEach((s,i)=>{const el=document.getElementById('seg'+i);
+  el.className='seg'+(i===cur?' active':(i<cur?' done':''));});}
+
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+function backRow(prevStep,nextStep,nextLabel,nextId){
+  const row=el('div','actions');
+  const back=el('button','btn ghost', prevStep===null?'☰ 症例一覧へ':'← 戻る');
+  back.onclick=()=> prevStep===null?toMenu():go(prevStep);
+  row.appendChild(back);
+  if(nextStep!==null){const nx=el('button','btn',nextLabel);nx.id=nextId;nx.onclick=()=>go(nextStep);row.appendChild(nx);}
+  else row.appendChild(el('span'));
+  return row;
+}
+
+function openCase(i){
+  C=CASES[i];
+  S={askedKey:0,tongue:0,axisAnswered:0,axisCorrect:0,axisResults:[],rx:false,rxCorrect:false,recorded:false};
+  document.getElementById('menu').style.display='none';
+  document.getElementById('tutorial').style.display='block';
+  document.getElementById('crumb').innerHTML='<span class="crumb-case">症例：<b>'+C.title+'</b>（'+C.domain+'）</span><button class="home-btn" onclick="toMenu()">☰ スタート画面に戻る</button>';
+  buildAll();
+  go(0);
+}
+function toMenu(){
+  document.getElementById('tutorial').style.display='none';
+  document.getElementById('cert').style.display='none';
+  document.getElementById('menu').style.display='block';
+  renderMenu();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function go(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  cur=n;renderProg();
+  if(n===5)showScore();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* MC（舌診・各軸・方剤で共通） */
+function makeMC(parent,opts,fbOk,fbNg,onResolve,rxMode){
+  const box=el('div','opts');
+  const fb=el('div','fb');
+  let done=false;
+  opts.forEach(o=>{
+    const b=el('button','opt',o.t||('<b>'+o.name+'</b>'));
+    b.onclick=()=>{
+      if(done)return;done=true;
+      box.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+      const correct=!!o.correct||!!o.ok;
+      if(correct){b.classList.add('correct');}
+      else{b.classList.add('wrong');
+        // 正解をハイライト
+        opts.forEach((oo,idx)=>{if(oo.correct||oo.ok)box.querySelectorAll('.opt')[idx].classList.add('correct');});}
+      if(rxMode){fb.className='fb show '+(correct?'ok':'ng');fb.innerHTML=o.html;}
+      else{fb.className='fb show '+(correct?'ok':'ng');fb.innerHTML=correct?fbOk:fbNg;}
+      onResolve(correct);
+    };
+    box.appendChild(b);
+  });
+  parent.appendChild(box);parent.appendChild(fb);
+}
+
+function buildAll(){
+  /* STEP0 導入 */
+  const s0=document.getElementById('s0');s0.innerHTML='';
+  s0.appendChild(el('span','step-tag','Introduction'));
+  s0.appendChild(el('h2','section','症例提示'));
+  s0.appendChild(el('p','lead',C.learn));
+  s0.appendChild(patientCard(C));
+  s0.appendChild(el('p','lead','まずは<b>問診</b>から。何を聞き出すかはあなた次第です。'));
+  const a0=el('div','actions');a0.appendChild(elBack());const n0=el('button','btn','問診を始める →');n0.onclick=()=>go(1);a0.appendChild(n0);
+  s0.appendChild(a0);
+  function elBack(){const b=el('button','btn ghost','☰ 症例一覧へ');b.onclick=toMenu;return b;}
+
+  /* STEP1 問診 */
+  const s1=document.getElementById('s1');s1.innerHTML='';
+  s1.appendChild(el('span','step-tag','Step 1 ・ 医療面接（問診）'));
+  s1.appendChild(el('h2','section','何を聞きますか？'));
+  s1.appendChild(el('p','lead','気になる項目をクリックすると患者さんが答えます。証につながる随伴症状を、<b>少なくとも'+C.minKey+'項目</b>聞いてみましょう。'));
+  const qg=el('div','qgrid');
+  const hint=el('div','hint','まだ情報が足りません。冷え・痛みの性質、二便、月経、口渇、痰や汗など、証につながる項目を聞いてみましょう。');
+  C.questions.forEach(item=>{
+    const b=el('button','qbtn','<span class="q">'+item.q+'</span><span class="answer">▶ '+item.a+'</span>');
+    b.onclick=()=>{if(b.classList.contains('asked'))return;b.classList.add('asked');
+      if(item.key)S.askedKey++;
+      if(S.askedKey>=C.minKey){document.getElementById('q-next').disabled=false;hint.classList.remove('show');}
+      else hint.classList.add('show');};
+    qg.appendChild(b);
+  });
+  s1.appendChild(qg);s1.appendChild(hint);
+  s1.appendChild(backRow(0,2,'問診を終え、診察へ →','q-next'));
+
+  /* STEP2 四診 */
+  const s2=document.getElementById('s2');s2.innerHTML='';
+  s2.appendChild(el('span','step-tag','Step 2 ・ 四診（望・聞・問・切）'));
+  s2.appendChild(el('h2','section','診察所見をとる'));
+  const tbl=el('table','findings');
+  C.findings.forEach(f=>{const tr=el('tr');tr.appendChild(el('th',null,f[0]));tr.appendChild(el('td',null,f[1]));tbl.appendChild(tr);});
+  s2.appendChild(tbl);
+  s2.appendChild(figuresBlock(C));
+  s2.appendChild(el('p','lead','<b>確認問題：</b>'+C.tongue.prompt));
+  makeMC(s2,C.tongue.options,C.tongue.ok,C.tongue.ng,(ok)=>{if(ok)S.tongue=1;document.getElementById('t-next').disabled=false;},false);
+  s2.appendChild(backRow(1,3,'証を組み立てる →','t-next'));
+
+  /* STEP3 証 */
+  const s3=document.getElementById('s3');s3.innerHTML='';
+  s3.appendChild(el('span','step-tag','Step 3 ・ 証の組み立て'));
+  s3.appendChild(el('h2','section','4つの視点で証を診断する'));
+  s3.appendChild(el('p','lead','集めた所見を、気血水・八綱・六病位・五臓で整理します。各設問に1つずつ答えてください。'));
+  C.axes.forEach((ax,ai)=>{
+    s3.appendChild(el('div','vignette','<b>'+ax.n+'</b><div style="font-size:.86rem;color:var(--sub);margin-top:4px">手がかり：'+ax.hint+'</div>'));
+    makeMC(s3,ax.options,ax.ok,ax.ng,(ok)=>{S.axisAnswered++;S.axisResults[ai]=!!ok;if(ok)S.axisCorrect++;
+      if(S.axisAnswered===C.axes.length)document.getElementById('s-next').disabled=false;},false);
+  });
+  s3.appendChild(el('div',null,'<div style="font-size:.82rem;color:var(--sub);margin-top:4px">※六病位は本来、急性熱性疾患の経過を捉える枠組みです。慢性の病態では「裏か表か」を大づかみにし、気血水・五臓と併用するのが実践的です。</div>'));
+  s3.appendChild(backRow(2,4,'方剤を選ぶ →','s-next'));
+
+  /* STEP4 方剤 */
+  const s4=document.getElementById('s4');s4.innerHTML='';
+  s4.appendChild(el('span','step-tag','Step 4 ・ 方剤選択'));
+  s4.appendChild(el('h2','section','どの方剤を選びますか？'));
+  s4.appendChild(el('p','lead',C.rxPrompt));
+  makeMC(s4,C.rx,null,null,(ok)=>{S.rx=true;S.rxCorrect=ok;document.getElementById('r-next').disabled=false;},true);
+  s4.appendChild(backRow(3,5,'まとめへ →','r-next'));
+
+  /* STEP5 まとめ */
+  const s5=document.getElementById('s5');s5.innerHTML='';
+  s5.appendChild(el('span','step-tag','Step 5 ・ 振り返り'));
+  s5.appendChild(el('h2','section','診断のまとめ'));
+  const gw=el('div','gauge-wrap');gw.id='score-gauge';s5.appendChild(gw);
+  s5.appendChild(el('div','score-sub',''));s5.children[s5.children.length-1].id='score-sub';
+  const stbl=el('table','summary-tbl');
+  C.summary.forEach(r=>{const tr=el('tr');tr.appendChild(el('th',null,r[0]));tr.appendChild(el('td',null,r[1]));stbl.appendChild(tr);});
+  s5.appendChild(stbl);
+  s5.appendChild(herbBlock(C));
+  s5.appendChild(el('p','lead','<b>鑑別のポイント</b>'));
+  const dd=el('div',null,'');dd.style.fontSize='.9rem';
+  dd.innerHTML=C.diff.map(d=>'<span class="pill">'+d.name+'</span>'+d.text).join('<br>');
+  s5.appendChild(dd);
+  s5.appendChild(classicBlock(C));
+  s5.appendChild(el('div','note','<b>処方上の注意：</b>'+C.caution+'<br>本ツールは学習用シミュレーションです。実際の処方は患者個別の状態・併用薬・禁忌を確認し、指導医とともに判断してください。'));
+  const a5=el('div','actions');
+  const m=el('button','btn ghost','☰ 別の症例へ');m.onclick=toMenu;a5.appendChild(m);
+  const pr=el('button','btn','印刷 / PDF保存');pr.onclick=()=>window.print();a5.appendChild(pr);
+  s5.appendChild(a5);
+}
+
+function showScore(){
+  const s=S.tongue+S.axisCorrect+(S.rxCorrect?1:0);
+  document.getElementById('score-gauge').innerHTML=scoreGauge(s,6);
+  if(!S.recorded){recordResult(s);S.recorded=true;}
+  const sub=document.getElementById('score-sub');
+  if(s===6)sub.textContent='満点。問診から方剤選択まで一貫した診断ができています。';
+  else if(s>=4)sub.textContent='よくできました。間違えた項目はフィードバックを見直しましょう。';
+  else sub.textContent='各ステップのフィードバックを読み返し、所見と証のつながりを確認しましょう。';
+  var prog=loadProg(), done=CASES.filter(function(c){return prog[c.id]&&prog[c.id].done;}).length;
+  if(done===CASES.length) sub.innerHTML+='<br><b>全'+CASES.length+'症例クリア！</b> メニューから修了証を発行できます。';
+}
+/* v2: 5症例データ駆動 */
+</script>
+</body>
+</html>
