@@ -7,7 +7,7 @@
 <style>
   :root{
     --bg:#f4f1ea; --panel:#fffdf8; --ink:#252119; --sub:#544c3d;
-    --line:#ded6c4; --accent:#6e4e2e; --accent2:#8a5722;
+    --line:#c6b088; --accent:#6e4e2e; --accent2:#8a5722;
     --good:#3f7d52; --good-bg:#e8f3ea; --bad:#b1492f; --bad-bg:#f7e9e4;
     --warn:#9a7a1e; --warn-bg:#f6efd9; --chip:#efe9db; --shadow:0 2px 14px rgba(60,45,25,.10);
   }
@@ -24,7 +24,7 @@
     color:var(--sub);border:1px solid transparent;white-space:nowrap}
   .progress .seg.active{background:var(--accent);color:#fff}
   .progress .seg.done{background:#dfe9df;color:var(--good);border-color:#cfe0cf}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  .card{background:var(--panel);border:1.5px solid var(--line);border-radius:14px;
     padding:24px;box-shadow:var(--shadow);margin-top:14px}
   .step-tag{display:inline-block;font-size:.72rem;letter-spacing:.12em;color:var(--accent2);
     font-weight:700;margin-bottom:6px}
@@ -35,7 +35,7 @@
   .vignette .who{font-weight:700;color:var(--accent)}
   .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
   @media(max-width:560px){.qgrid{grid-template-columns:1fr}}
-  button.opt,button.qbtn{font:inherit;text-align:left;cursor:pointer;border:1px solid var(--line);
+  button.opt,button.qbtn{font:inherit;text-align:left;cursor:pointer;border:1.5px solid var(--line);
     background:#fff;border-radius:10px;padding:12px 14px;transition:.15s;color:var(--ink)}
   button.opt:hover,button.qbtn:hover{border-color:var(--accent2);background:#fbf4ea}
   button.qbtn.asked{background:#eef3ee;border-color:#cfe0cf;color:var(--sub)}
@@ -67,7 +67,7 @@
   .term:hover .tip{visibility:visible;opacity:1}
   table.findings,table.summary-tbl{width:100%;border-collapse:collapse;margin:10px 0;font-size:.9rem}
   table.findings th,table.findings td,table.summary-tbl th,table.summary-tbl td{
-    border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+    border:1.5px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
   table.findings th,table.summary-tbl th{background:#f3ece0;color:var(--accent);white-space:nowrap}
   table.findings th{width:84px}
   .hint{font-size:.84rem;color:var(--warn);background:var(--warn-bg);border-radius:8px;padding:8px 12px;margin-top:10px;display:none}
@@ -78,7 +78,7 @@
   .note{font-size:.82rem;color:var(--sub);margin-top:14px;border-top:1px dashed var(--line);padding-top:10px}
   /* 四診の図 */
   .fig-row{display:flex;gap:14px;flex-wrap:wrap;margin:16px 0}
-  .fig-card{flex:1 1 210px;background:#fbf6ec;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .fig-card{flex:1 1 210px;background:#fbf6ec;border:1.5px solid var(--line);border-radius:12px;padding:14px;text-align:center}
   .fig-h{font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:8px}
   .fig-cap{font-size:.82rem;color:var(--sub);margin-top:8px}
   .fig-legend{margin-top:12px;text-align:left}
@@ -89,13 +89,13 @@
   .leg-none{font-size:.82rem;color:var(--sub)}
   .leg-neg{font-size:.8rem;color:var(--sub);margin-top:3px}
   /* 生薬構成 */
-  .herb-box{margin:16px 0;background:#fbf6ec;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .herb-box{margin:16px 0;background:#fbf6ec;border:1.5px solid var(--line);border-radius:12px;padding:14px 16px}
   .herb-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0}
   .herb-role{color:#fff;font-size:.76rem;font-weight:700;border-radius:14px;padding:3px 11px;white-space:nowrap}
   .herb-chip{border:1.5px solid;border-radius:8px;padding:3px 10px;font-size:.86rem;background:#fff;font-weight:600}
   .herb-foot{font-size:.8rem;color:var(--sub);margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
   /* 古典 */
-  .classic-box{margin:16px 0;background:#f7f2e6;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:14px 16px}
+  .classic-box{margin:16px 0;background:#f7f2e6;border:1.5px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:14px 16px}
   .cl-src{font-size:.86rem;color:var(--ink);margin-bottom:6px}
   .cl-quote{margin:8px 0;padding:10px 14px;background:#fffdf8;border:1px dashed var(--line);border-radius:8px;font-size:.95rem;line-height:1.95;color:#3a352c;font-family:"Hiragino Mincho ProN","Yu Mincho",serif}
   .cl-read{font-size:.86rem;color:var(--sub);margin-top:8px}
@@ -120,9 +120,11 @@
   .mini-btn{font:inherit;font-size:.82rem;cursor:pointer;border:1px solid var(--accent);background:#fff;color:var(--accent);border-radius:18px;padding:6px 14px;font-weight:600;transition:.15s}
   .mini-btn:hover{background:#f0e7da}
   .mini-btn.gold{background:#bf9b30;border-color:#bf9b30;color:#fff}
+  .mini-btn.upd{background:var(--accent);border-color:var(--accent);color:#fff}
+  .mini-btn.upd:hover{background:#5a3f24}
   .mini-btn.ghost{border-color:var(--line);color:var(--sub)}
   #weak-panel:empty{display:none}
-  #weak-panel{margin-top:12px;background:#fbf6ec;border:1px solid var(--line);border-radius:12px;padding:14px}
+  #weak-panel{margin-top:12px;background:#fbf6ec;border:1.5px solid var(--line);border-radius:12px;padding:14px}
   .weak-h{font-size:.84rem;font-weight:700;color:var(--accent);margin-bottom:10px}
   .weak-foot,.weak-empty{font-size:.82rem;color:var(--sub);margin-top:8px}
   .weak-row{display:flex;align-items:center;gap:10px;margin:6px 0}
@@ -131,7 +133,7 @@
   .weak-fill{height:100%;border-radius:8px;transition:width .5s}
   .weak-pct{font-size:.8rem;color:var(--sub);width:40px;text-align:right;flex:none}
   .rev-list{display:flex;flex-direction:column;gap:8px}
-  .rev-item{font:inherit;text-align:left;cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--ink);transition:.15s}
+  .rev-item{font:inherit;text-align:left;cursor:pointer;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--ink);transition:.15s}
   .rev-item:hover{border-color:var(--accent2);background:#fbf4ea}
   .rev-sc{font-size:.82rem;color:var(--sub);font-weight:600;flex:none}
   /* 習熟度マップ */
@@ -148,7 +150,7 @@
   .ms-next{color:var(--accent);font-weight:600}
   /* 称号バッジ */
   .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-  .badge{border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;background:#fff;opacity:.55;filter:grayscale(.55)}
+  .badge{border:1.5px solid var(--line);border-radius:12px;padding:12px;text-align:center;background:#fff;opacity:.55;filter:grayscale(.55)}
   .badge.got{opacity:1;filter:none;border-color:#bf9b30;background:#fffaf0;box-shadow:0 2px 8px rgba(191,155,48,.18)}
   .badge-seal{width:40px;height:40px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background:#bdb5a3}
   .badge.got .badge-seal{background:#bf9b30}
@@ -179,7 +181,7 @@
   /* menu */
   .case-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
   @media(max-width:600px){.case-grid{grid-template-columns:1fr}}
-  .case-card{text-align:left;cursor:pointer;border:1px solid var(--line);background:var(--panel);
+  .case-card{text-align:left;cursor:pointer;border:1.5px solid var(--line);background:var(--panel);
     border-radius:14px;padding:16px 18px;transition:.15s;box-shadow:var(--shadow);font:inherit;color:var(--ink)}
   .case-card:hover{border-color:var(--accent2);transform:translateY(-2px)}
   .case-card .dom{font-size:.72rem;font-weight:700;color:#fff;background:var(--accent2);
@@ -188,7 +190,7 @@
   .case-card p{margin:0;font-size:.86rem;color:var(--sub)}
   .case-card .rx-tag{margin-top:8px;font-size:.8rem;color:var(--ink);font-weight:600}
   .menu-note{font-size:.84rem;color:var(--sub);margin-top:18px;background:#fbf6ec;border-radius:10px;padding:12px 14px}
-  .crumb{display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:30;background:var(--bg);padding:8px 0 6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+  .crumb{display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:30;background:var(--bg);padding:8px 0 6px;border-bottom:1.5px solid var(--line);margin-bottom:4px}
   .crumb-case{font-size:.82rem;color:var(--sub)}
   .home-btn{font:inherit;font-size:.8rem;cursor:pointer;border:1px solid var(--accent);background:#fff;color:var(--accent);border-radius:18px;padding:5px 13px;font-weight:600;white-space:nowrap;transition:.15s}
   .home-btn:hover{background:#f0e7da}
@@ -3019,6 +3021,7 @@ function recordResult(s){
 function starStr(n){var full=Math.round(n/6*5),o='';for(var i=0;i<5;i++)o+=(i<full?'★':'☆');return o;}
 
 /* メニュー描画 */
+function reloadLatest(){var u=location.href.split('#')[0].split('?')[0];location.href=u+'?v='+Date.now();}
 function renderMenu(){
   var prog=loadProg();
   var done=CASES.filter(function(c){return prog[c.id]&&prog[c.id].done;}).length;
@@ -3028,6 +3031,7 @@ function renderMenu(){
   var html='<div class="prog-head"><b>学習の進み具合</b><span>'+done+' / '+CASES.length+' 症例クリア（満点 '+perfect+'）</span></div>'+
     '<div class="prog-track"><div class="prog-fill" style="width:'+pct+'%"></div></div>'+
     '<div class="prog-btns">'+
+      '<button class="mini-btn upd" id="btn-update">↻ 最新版に更新</button>'+
       '<button class="mini-btn" id="btn-weak">習熟度を見る</button>'+
       '<button class="mini-btn" id="btn-badge">称号バッジ</button>'+
       '<button class="mini-btn" id="btn-review">復習モード</button>'+
@@ -3045,6 +3049,7 @@ function renderMenu(){
     b.onclick=function(){openCase(i);};
     grid.appendChild(b);
   });
+  document.getElementById('btn-update').onclick=reloadLatest;
   document.getElementById('btn-weak').onclick=showMastery;
   document.getElementById('btn-badge').onclick=openBadges;
   document.getElementById('btn-review').onclick=openReview;
